@@ -45,7 +45,11 @@ summary
 ```{r}
 ggplot(data=summary, aes(x=calendar_year, y=Total_Amount_Rewarded)) + 
   geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90, size = 10))
+    scale_y_continuous(
+  labels = scales::comma_format(big.mark = ',',
+                                 decimal.mark = '.')) +
+    scale_x_continuous(breaks = seq(ceiling(min(summary$calendar_year)), floor(max(summary$calendar_year)), by = 1))
+
 
 ```
 
