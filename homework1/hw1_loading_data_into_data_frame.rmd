@@ -4,7 +4,7 @@ title: DATA607 HW1 Loading Data Into A Data Frame
 
 # Introduction
 
-My article is about identifying a rising trend in police misconduct payouts across the United States.
+This article is about what police misconduct settlement data, or lack thereof, can tell us about how police departments are changing for better or worse our current era of increasing calls for police reform. The article focuses heavily on the fact that the data on settlements for police misconduct is difficult to draw conclusions from due to the lack of standardization between deparments, lack of transparency, and lack of data in some cases.
 
 [Cities Spend Millions On Police Misconduct Every Year. Here's Why It's So Difficult to Hold Departments Accountable.](https://fivethirtyeight.com/features/police-misconduct-costs-cities-millions-every-year-but-thats-where-the-accountability-ends/)
 
@@ -46,13 +46,16 @@ summary
 ggplot(data=summary, aes(x=calendar_year, y=Total_Amount_Rewarded)) + 
   geom_bar(stat = "identity") +
     scale_y_continuous(
-  labels = scales::comma_format(big.mark = ',',
-                                 decimal.mark = '.')) +
-    scale_x_continuous(breaks = seq(ceiling(min(summary$calendar_year)), floor(max(summary$calendar_year)), by = 1))
+  labels = scales::comma_format(big.mark = ','),breaks = seq(0, floor(max(summary$Total_Amount_Rewarded)), by = 10000000)) +
+    scale_x_continuous(breaks = seq(min(summary$calendar_year), max(summary$calendar_year), by = 1)) +
+  ylab("Total Amount Rewarded ($)") +
+  xlab("Year")
 
 
 ```
 
 # Conclusions
 
+Something that the article brought up that I would be interested in pursing further is comparing the settlements for more conservative cities versus more liberal cities. The idea being conservative areas of the country may be more apt to side with the police and less likely to award large settlements.
 
+If I were to do that I would plot the data from cities with different political leanings and compare the data to see if it supported the hypothesis. This might require additional data to determine what areas have what political affiliations.
