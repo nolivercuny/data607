@@ -1,5 +1,5 @@
 ---
-title: Loading Data Into A Data Frame
+title: DATA607 HW1 Loading Data Into A Data Frame
 ---
 
 # Introduction
@@ -44,8 +44,11 @@ summary
 
 ```{r}
 ggplot(data=summary, aes(x=calendar_year, y=Total_Amount_Rewarded)) + 
-  geom_bar(stat = "identity")
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, size = 10))
 
 ```
----
+
 # Conclusions
+
+
