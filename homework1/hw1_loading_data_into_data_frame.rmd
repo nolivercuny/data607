@@ -6,25 +6,46 @@ title: Loading Data Into A Data Frame
 
 My article is about identifying a rising trend in police misconduct payouts across the United States.
 
-[Cities Spend Millions On Police Misconduct Every Year. Here’s Why It’s So Difficult to Hold Departments Accountable.
-](https://fivethirtyeight.com/features/police-misconduct-costs-cities-millions-every-year-but-thats-where-the-accountability-ends/)
+[Cities Spend Millions On Police Misconduct Every Year. Here's Why It's So Difficult to Hold Departments Accountable.](https://fivethirtyeight.com/features/police-misconduct-costs-cities-millions-every-year-but-thats-where-the-accountability-ends/)
+
+# Analysis
+
+## Load the libraries
+
+install.packages("dplyr")
+install.packages("ggplot2")
 
 ```{r}
 library("dplyr")
+library("ggplot2")
 ```
+
+## Load the data
 
 ```{r}
 chicagoMisconductPayouts <- read.csv(file = 'chicago_edited.csv')
 head(chicagoMisconductPayouts)
 ```
-
+## Subset the data
 ```{r}
 payoutsWithYear <- subset(chicagoMisconductPayouts, select = c("calendar_year", "amount_awarded"))
 head(payoutsWithYear)
 ```
+## Aggregate the data
 
 ```{r}
-payoutsWithYear %>%
+summary <- payoutsWithYear %>%
   group_by(calendar_year) %>%
-  summarise(mean = mean(amount_awarded), n = n())
+  summarise(Average_Amount_Rewarded = mean(amount_awarded),Total_Amount_Rewarded = sum(amount_awarded), Number_Of_Settlements = n())
+summary
 ```
+
+## Graph the data
+
+```{r}
+ggplot(data=summary, aes(x=calendar_year, y=Total_Amount_Rewarded)) + 
+  geom_bar(stat = "identity")
+
+```
+---
+# Conclusions
