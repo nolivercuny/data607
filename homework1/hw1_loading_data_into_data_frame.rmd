@@ -41,7 +41,7 @@ head(payoutsWithYear)
 ```
 ## Aggregate the data
 
-I thin grouped each row by the calendar year and summarized the data by taking the mean of the payouts for each year, summed the payouts per year, and counted the amount of settlements per year.
+I then grouped each row by the calendar year and summarized the data by taking the mean of the payouts for each year, summed the payouts per year, and counted the amount of settlements per year.
 
 ```{r}
 summary <- payoutsWithYear %>%
@@ -52,7 +52,7 @@ summary
 
 ## Graph the data
 
-I graphed the total settlements in dollars per year as I thought it might show a trend in the dollar amount of settlements increasing over time. What I found was there were two peak years 2013 and 2017 with much lower amounts in the remaining years.
+I graphed the total settlements in dollars per year as I thought it might show a trend in the dollar amount of settlements increasing over time. What I found was there were two peak years 2013 and 2017 with much lower amounts in the remaining years. Some other interesting insights are that 2017 appears to have fewer payouts than both 2016 and 2018 indicating that they may have been a uncharacteristically large payout in the year of 2017 causing it to be higher than other years.
 
 ```{r}
 ggplot(data=summary, aes(x=calendar_year, y=Total_Amount_Rewarded)) + 
