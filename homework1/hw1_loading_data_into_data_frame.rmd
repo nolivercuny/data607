@@ -4,13 +4,15 @@ title: DATA607 HW1 Loading Data Into A Data Frame
 
 # Introduction
 
-This article is about what police misconduct settlement data, or lack thereof, can tell us about how police departments are changing for better or worse our current era of increasing calls for police reform. The article focuses heavily on the fact that the data on settlements for police misconduct is difficult to draw conclusions from due to the lack of standardization between deparments, lack of transparency, and lack of data in some cases.
+This article is about what police misconduct settlement data, or lack thereof, can tell us about how police departments are changing for better or worse our current era of increasing calls for police reform. The article focuses heavily on the fact that the data on settlements for police misconduct is difficult to draw conclusions from due to the lack of standardization between departments, lack of transparency, and lack of data in some cases.
 
 [Cities Spend Millions On Police Misconduct Every Year. Here's Why It's So Difficult to Hold Departments Accountable.](https://fivethirtyeight.com/features/police-misconduct-costs-cities-millions-every-year-but-thats-where-the-accountability-ends/)
 
 # Analysis
 
 ## Load the libraries
+
+I am loading two libraries for this project. The `dplyr` library to help with manipulating the dataframe and the `ggplot2` library for plotting the data. 
 
 install.packages("dplyr")
 install.packages("ggplot2")
@@ -22,16 +24,24 @@ library("ggplot2")
 
 ## Load the data
 
+The data set I chose was the Chicago, IL data set. I chose this data set because it had a large amount of rows which I believe would make for more interesting analysis. The data set contains 24 columns and 1515 records. The data can be found in the same directory as this file as `chicago_edited.csv`
+
 ```{r}
 chicagoMisconductPayouts <- read.csv(file = 'chicago_edited.csv')
 head(chicagoMisconductPayouts)
+nrow(chicagoMisconductPayouts)
 ```
 ## Subset the data
+
+I subsetted the data down to just two columns. The year that the misconduct settlement was awarded and the dollar amount awarded. Those two values are the the most important variables in this data set.
+
 ```{r}
 payoutsWithYear <- subset(chicagoMisconductPayouts, select = c("calendar_year", "amount_awarded"))
 head(payoutsWithYear)
 ```
 ## Aggregate the data
+
+I thin grouped each row by the calendar year and summarized the data by taking the mean of the payouts for each year, summed the payouts per year, and counted the amount of settlements per year.
 
 ```{r}
 summary <- payoutsWithYear %>%
@@ -41,6 +51,8 @@ summary
 ```
 
 ## Graph the data
+
+I graphed the total settlements in dollars per year as I thought it might show a trend in the dollar amount of settlements increasing over time. What I found was there were two peak years 2013 and 2017 with much lower amounts in the remaining years.
 
 ```{r}
 ggplot(data=summary, aes(x=calendar_year, y=Total_Amount_Rewarded)) + 
