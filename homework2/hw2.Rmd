@@ -6,7 +6,7 @@ author: "Nick Oliver"
 ```{r}
 library(DBI)
 library(dplyr)
-
+library(ggplot2)
 ```
 
 ```{r}
@@ -15,8 +15,27 @@ dbListTables(con)
 
 ```
 ```{r}
-res <- dbSendQuery(con, "select m.*, r.rating, r2.* from ratings r join movies m on m.id = r.movie_id join reviewers r2 on r2.id = r.reviewer_id")
-dbFetch(res)
+movie_ratings <- dbGetQuery(con, "select m.id,
+       m.name as movie_name,
+       m.release_date,
+       m.director,
+       m.runtime_minutes,
+       m.budget_dollars,
+       m.box_office_dollars,
+       r.rating,
+       r2.username,
+       r2.name as user_display_name
+from ratings r
+         join movies m on m.id = r.movie_id
+         join reviewers r2 on r2.id = r.reviewer_id")
+
+movie_ratings
+
+```
+
+```{r}
+ggplot(data = movie_ratings, aes(x = movie_name, y = rating)) + 
+    geom_boxplot()
 
 ```
 
