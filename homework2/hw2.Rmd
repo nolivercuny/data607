@@ -1,18 +1,22 @@
 ---
 title: "SQL and R"
 author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
 ---
 
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
 library(DBI)
 library(dplyr)
 library(ggplot2)
 ```
 
-```{r}
+```{r echo=TRUE}
 con <- dbConnect(RSQLite::SQLite(), "movie_ratings.db")
-dbListTables(con)
-
 ```
 ```{r}
 movie_ratings <- dbGetQuery(con, "select m.id,
@@ -28,8 +32,6 @@ movie_ratings <- dbGetQuery(con, "select m.id,
 from ratings r
          join movies m on m.id = r.movie_id
          join reviewers r2 on r2.id = r.reviewer_id")
-
-movie_ratings
 
 ```
 
