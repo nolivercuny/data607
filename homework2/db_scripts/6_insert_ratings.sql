@@ -24,11 +24,14 @@ insert into ratings(reviewer_id, movie_id, rating) VALUES (4,3,2.5);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (4,4,2);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (4,5,2.5);
 -- Black Widow
+insert into ratings(reviewer_id, movie_id, rating) VALUES (5,1,NULL);
+insert into ratings(reviewer_id, movie_id, rating) VALUES (5,2,NULL);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (5,3,3);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (5,4,3.5);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (5,5,4);
 -- The Suicide Squad
 insert into ratings(reviewer_id, movie_id, rating) VALUES (6,1,2);
+insert into ratings(reviewer_id, movie_id, rating) VALUES (6,2,NULL);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (6,3,3);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (6,4,3);
 insert into ratings(reviewer_id, movie_id, rating) VALUES (6,5,5);
