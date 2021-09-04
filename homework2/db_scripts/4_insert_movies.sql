@@ -1,2 +1,6 @@
-insert into movies(name)
-VALUES ('SOUL')
+insert into movies(name, release_date, director, runtime_minutes,budget_dollars,box_office_dollars) VALUES ('Soul', '2020-10-11', 'Pete Doctor',100,150000000,119300000);
+insert into movies(name, release_date, director, runtime_minutes,budget_dollars,box_office_dollars) VALUES ('Tenet','2020-09-03','Christopher Nolan',150,200000000,363700000);
+insert into movies(name, release_date, director, runtime_minutes,budget_dollars,box_office_dollars) VALUES ('Nomadland','2021-02-19','Chloé Zhao',108,5000000,27000000);
+insert into movies(name, release_date, director, runtime_minutes,budget_dollars,box_office_dollars) VALUES ('Promising Young Woman','2020-12-25','Emerald Fennell',108,10000000,16700000);
+insert into movies(name, release_date, director, runtime_minutes,budget_dollars,box_office_dollars) VALUES ('Black Widow','2021-07-09','Cate Shortland',133,200000000,371300000);
+insert into movies(name, release_date, director, runtime_minutes,budget_dollars,box_office_dollars) VALUES ('The Suicide Squad','2021-08-06','James Gunn',132,185000000,746000000);
