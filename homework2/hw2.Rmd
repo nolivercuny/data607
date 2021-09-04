@@ -1,0 +1,25 @@
+---
+title: "SQL and R"
+author: "Nick Oliver"
+---
+
+```{r}
+library(DBI)
+library(dplyr)
+
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), "movie_ratings.db")
+dbListTables(con)
+
+```
+```{r}
+res <- dbSendQuery(con, "select m.*, r.rating, r2.* from ratings r join movies m on m.id = r.movie_id join reviewers r2 on r2.id = r.reviewer_id")
+dbFetch(res)
+
+```
+
+```{r}
+dbDisconnect(con)
+```
