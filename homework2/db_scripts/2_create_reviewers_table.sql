@@ -1,4 +1,5 @@
 CREATE TABLE reviewers(
    id INTEGER PRIMARY KEY NOT NULL,
-   name TEXT NOT NULL
+   name TEXT NOT NULL,
+   username TEXT NOT NULL
 );

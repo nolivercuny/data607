@@ -1,5 +1,5 @@
-insert into reviewers(name) values ('karsten');
-insert into reviewers(name) values ('BRAT');
-insert into reviewers(name) values ('Jay');
-insert into reviewers(name) values ('Lucy');
-insert into reviewers(name) values ('♦️•Lily•💋')
+insert into reviewers(name,username) values ('karsten','kurstboy');
+insert into reviewers(name,username) values ('BRAT','bratpitt');
+insert into reviewers(name,username) values ('Jay','jay');
+insert into reviewers(name,username) values ('Lucy','deathproof');
+insert into reviewers(name,username) values ('♦️•Lily•💋','sapphicquinn');
