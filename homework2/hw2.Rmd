@@ -7,15 +7,27 @@ output:
     highlight: github
 ---
 
+# Movie Ratings Database, SQL, and R
+
+This project uses movie ratings data of 6 films scrapped from 5 users of the website [Letterboxd](https://letterboxd.com/films/)
+
+The data was loaded into a SQLite database which allows for flat file storage of the data in the `movie_ratings.db` file located in this directory.
+
+For more information about how the `movie_ratings.db` was created and populated with data please refer to the `readme.md` file in this directory. This file also contains the original source links for all of the data that was collected. 
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
 library(DBI)
 library(dplyr)
 library(ggplot2)
+library(tidyr)
+library(knitr)
+library(kableExtra)
 ```
 
-```{r echo=TRUE}
+```{r}
 con <- dbConnect(RSQLite::SQLite(), "movie_ratings.db")
 ```
 ```{r}
@@ -31,13 +43,45 @@ movie_ratings <- dbGetQuery(con, "select m.id,
        r2.name as user_display_name
 from ratings r
          join movies m on m.id = r.movie_id
-         join reviewers r2 on r2.id = r.reviewer_id")
+         join reviewers r2 on r2.id = r.reviewer_id
+         order by m.id")
 
 ```
 
+## Movie Ratings Dataset
+
+The movie ratings data is structured using 3 tables. 
+
+1. A movie table which contains information about the movie.
+2. A reviewers table which contains reviewer information
+3. A ratings table which contains foreign keys for both the movie id and the reviewer id along with the actual rating the user gave to the movie
+
+Here is the data set in its entirety
+
 ```{r}
-ggplot(data = movie_ratings, aes(x = movie_name, y = rating)) + 
-    geom_boxplot()
+kable(movie_ratings,caption="Movie Ratings Dataset",digits = 2, format = "html", row.names = TRUE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = F,
+                font_size = 10,
+                position = "left") %>%
+    row_spec(0, color = "white", background = "#92c1f0") %>%
+
+   scroll_box(height = "300px") 
+```
+## Graphing
+
+As you can see the data above contains empty values due to not every reviewer having seeing every film. I represented this by allowing nulls in the ratings table and inserting records for those users with null ratings. This is a bit of a contrived example because in the real world I would have just not inserted those records.
+
+Graphing the data set without removing those null records resulted in a warning. In order to handle this I used the `drop_na()` function of the `tidyr` library.
+
+Below is a boxplot with the distribution of ratings for each movie from our users.
+
+```{r}
+ggplot(data = movie_ratings %>% drop_na(), aes(x = movie_name, y = rating,fill=movie_name)) + 
+    geom_boxplot() +labs(title="Movie ratings by movie",
+        x ="Movie", y = "Rating")
+
+
 
 ```
 

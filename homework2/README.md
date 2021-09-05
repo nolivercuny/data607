@@ -6,6 +6,15 @@ Create the database
 
 `sqlite3 movie_ratings.db`
 
+Run the scripts in the `db_scripts` directory in numerical order to accomplish the following
+
+1. Creates the movies table
+2. Creates the reviewers table
+3. Creates the ratings table
+4. Inserts the 6 movie records
+5. Inserts the 5 movie reviewers
+6. Inserts each rating from each reviewer for each film
+
 ## Data Sources
 
 ### Movies
