@@ -1,0 +1,115 @@
+---
+title: "Homework 3"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+# Task 1
+
+Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+```{r}
+library(tidyverse)
+college_majors <- read.csv("majors-list.csv")
+
+data_or_stats_majors <- college_majors %>% filter(grepl('DATA|STATISTICS',Major))
+data_or_stats_majors
+```
+
+#Task 2 
+
+Write code that transforms the data below:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"
+
+Into a format like this:
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-line version:
+
+# Task 3 
+
+```{r}
+x <- c("apple", "banana", "pear","a","aa","a\1\1a")
+str_view(x, "(..)\1")
+```
+
+Describe, in words, what these expressions will match:
+
+(.)\1\1
+
+- (.) matches any single character except newline
+- \1 matches a literal escaped 1 which is a non-printing character
+- \1 matches a literal escaped 1 which is a non-printing character
+
+Example matches would be "a\1\1" or "7\1\1"
+
+If you really want to take this literally it wouldn't match anything because there are no double quotes around the expression which means you would get a syntax error. 
+
+"(.)(.)\\2\\1"
+
+- (.) matches any character except newline
+- (.) matches any character except newline
+- \\2 matches the second character in the string if it appears in the third position
+- \\1 matches the first character in the string if it appears in the fourth position
+
+Example matches would be "aaaa" or "abba" but not "aabb"
+
+
+(..)\1
+- (..) capture group matching any two characters except newline
+- \1 matches the non printing escaped \1 character
+
+Example matches would be "ab\1", "11\1", or "a\1\1" but not "abab"
+
+Again this was not surrounded in double quotes so would technically fail
+
+"(.).\\1.\\1"
+
+- (.) capture group matching any character except newline
+- . matches any char except newline
+- \\1 matches the first character
+- . matches any char except newline
+- \\1 matches the first character again
+
+This matches strings where the first character is repeated at the start, middle, and end of a 5 character string with any other characters in positions 2 and 4
+
+Examples "a1a2a", "aaaaa", not "axaxx"
+
+"(.)(.)(.).*\\3\\2\\1"
+
+- (.) capture group matching any character except newline
+- (.) capture group matching any character except newline
+- (.) capture group matching any character except newline
+- . matching any character except newline
+- * repeat 
+- \\3 match character in third position
+- \\2 match character in second position
+- \\1 match character in first position
+
+
+
+
+Matches strings with a minimum length of six where the last three characters are the first three characters in reverse order with any characters (except newline) in between
+
+"abc23456cba", "aaaaaaaaa"
+
+# Task 4 
+
+Construct regular expressions to match words that:
+
+Start and end with the same character.
+Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
