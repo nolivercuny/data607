@@ -149,10 +149,22 @@ Matches strings with a minimum length of six where the last three characters are
 
 "(.).*\\1"
 
+```{r}
+str_view(c("church","banana","apple"), "(.).*\\1")
+```
+
 ### Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
 
 ".*(.)(.).*\\1\\2.*"
 
+```{r}
+str_view(c("church","banana","apple"), ".*(.)(.).*\\1\\2.*")
+```
+
 ### Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
 
-".*(.).*\\1.*\\1.*\\1.*"
+".*(.).*\\1.*\\1.*"
+
+```{r}
+str_view(c("church","banana","apple","eleven"), ".*(.).*\\1.*\\1.*")
+```
