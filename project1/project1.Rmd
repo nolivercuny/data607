@@ -1,0 +1,48 @@
+---
+title: "Project 1"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+# Project 1
+
+## Load Libraries
+
+```{r load-libraries, results=FALSE, messages=FALSE}
+library(RCurl)
+library(stringr)
+```
+
+## Load Raw Data
+
+```{r read-data}
+file_url <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project1/tournamentinfo.txt'
+raw_data <- getURL(file_url)
+```
+
+## Processing
+
+Get rid of useless dashes
+```{r}
+data <- str_replace_all(raw_data,"-", "")
+```
+
+```{r}
+
+split <- str_split(data, '\n', simplify = TRUE)
+
+```
+
+```{r}
+split_values <- str_split(split, '\\|', simplify=TRUE)
+
+```
+
+```{r}
+df <- as.data.frame(split_values) %>% filter(V1 != "", V1 != "\r")
+```
