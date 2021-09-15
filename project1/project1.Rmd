@@ -16,6 +16,7 @@ editor_options:
 ```{r load-libraries, results=FALSE, messages=FALSE}
 library(RCurl)
 library(stringr)
+library(dplyr)
 ```
 
 ## Load Raw Data
@@ -45,4 +46,18 @@ split_values <- str_split(split, '\\|', simplify=TRUE)
 
 ```{r}
 df <- as.data.frame(split_values) %>% filter(V1 != "", V1 != "\r")
+```
+
+```{r}
+df_one <- df %>% filter(row_number() %% 2 == 1) 
+names(df_one) <- df_one[1,]
+df_two <- df %>% filter(row_number() %% 2 == 0)
+names(df_two) <- df_two[1,]
+
+```
+
+```{r}
+data <- bind_cols(df_one,df_two)
+data <- subset(data, select=-c(11,22))
+data <- data[-c(1),]
 ```
