@@ -17,6 +17,7 @@ editor_options:
 library(RCurl)
 library(stringr)
 library(dplyr)
+library(tidyr)
 ```
 
 ## Load Raw Data
@@ -60,4 +61,9 @@ names(df_two) <- df_two[1,]
 data <- bind_cols(df_one,df_two)
 data <- subset(data, select=-c(11,22))
 data <- data[-c(1),]
+```
+
+```{r}
+data <- separate(data, 12, sep="/", into = c('USCF_ID','PRE_POST'))
+data <- separate(data, 13, sep=">", into = c('Pre_Rating','Post_Rating'))
 ```
