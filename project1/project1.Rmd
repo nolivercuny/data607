@@ -34,21 +34,20 @@ Get rid of useless dashes
 data <- str_replace_all(raw_data,"-", "")
 ```
 
+Split the data on newlines
 ```{r}
-
 split <- str_split(data, '\n', simplify = TRUE)
-
 ```
-
+Split the data on the pipe character
 ```{r}
 split_values <- str_split(split, '\\|', simplify=TRUE)
 
 ```
-
+filter out empty rows
 ```{r}
 df <- as.data.frame(split_values) %>% filter(V1 != "", V1 != "\r")
 ```
-
+Break up the dataframe into two dataframes so they can be recombined because two rows represent a single record. Set the column names to the first row
 ```{r}
 df_one <- df %>% filter(row_number() %% 2 == 1) 
 names(df_one) <- df_one[1,]
@@ -56,14 +55,25 @@ df_two <- df %>% filter(row_number() %% 2 == 0)
 names(df_two) <- df_two[1,]
 
 ```
-
+Merge the two dataframes back into a single data frame. Drop the first row
 ```{r}
-data <- bind_cols(df_one,df_two)
-data <- subset(data, select=-c(11,22))
+data <- bind_cols(df_one,df_two) %>% 
+  subset(select=-c(11,22))
 data <- data[-c(1),]
 ```
 
 ```{r}
 data <- separate(data, 12, sep="/", into = c('USCF_ID','PRE_POST'))
 data <- separate(data, 13, sep=">", into = c('Pre_Rating','Post_Rating'))
+
+```
+
+Remove P from Pre_Rating Column
+```{r}
+data$Pre_Rating <- gsub("([A-Z])\\w+","",data$Pre_Rating)
+```
+
+```{r}
+g <- extract_numeric(data[3,4:10])
+sum(extract_numeric(data[g,13])) / length(data[g,13])
 ```
