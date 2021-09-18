@@ -70,14 +70,14 @@ data <- separate(data, 13, sep=">", into = c('Pre_Rating','Post_Rating'))
 
 Remove P and values after from Pre_Rating Column
 ```{r}
-data$Pre_Rating <- gsub("([A-Z])\\w+","",data$Pre_Rating)
+data$Pre_Rating <- parse_number(data$Pre_Rating)
 ```
 
 ```{r}
 for (i in 1:nrow(data)){
-  opponent_indexes <- extract_numeric(data[i,4:10])
+  opponent_indexes <- as.numeric(gsub("[^0-9]","",data[i,4:10]))
   opponent_indexes<-opponent_indexes[!is.na(opponent_indexes)]
-  opponents_ratings<-extract_numeric(data[opponent_indexes,13])
+  opponents_ratings<-data[opponent_indexes,13]
   rating_average <- sum(opponents_ratings) / length(opponents_ratings)
   data$Average_Opponent_Pre_Rating[i] <- round(rating_average)
 }
@@ -86,9 +86,10 @@ for (i in 1:nrow(data)){
 ```{r}
 final_output <- data[,c(2,3,11,13,23)]
 final_output$Pre_Rating <- gsub("R:", "", final_output$Pre_Rating)
+print(final_output)
 ```
 
 
 ```{r}
-write_csv(final_output, "final_output.csv")
+#write_csv(final_output, "final_output.csv")
 ```
