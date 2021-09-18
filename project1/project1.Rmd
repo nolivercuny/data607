@@ -13,15 +13,19 @@ editor_options:
 
 ## Load Libraries
 
-```{r load-libraries, results=FALSE, messages=FALSE}
+```{r, results=FALSE, message=FALSE, warning=FALSE}
 library(RCurl)
 library(stringr)
+library(readr)
 library(dplyr)
 library(tidyr)
+library(knitr)
+library(kableExtra)
 ```
 
 ## Load Raw Data
 
+Using the `RCurl` library download the raw text data from my GitHub repository. Set the result as `raw_data`
 ```{r read-data}
 file_url <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project1/tournamentinfo.txt'
 raw_data <- getURL(file_url)
@@ -29,67 +33,99 @@ raw_data <- getURL(file_url)
 
 ## Processing
 
-Get rid of useless dashes
+### Converting giant string to dataframe
+
+Get rid of dashes. At this point the data is one very long string.
 ```{r}
 data <- str_replace_all(raw_data,"-", "")
 ```
 
-Split the data on newlines
+Split the data on newlines then on the pipe character
 ```{r}
-split <- str_split(data, '\n', simplify = TRUE)
+split <- data %>% 
+  str_split('\n', simplify = TRUE) %>% 
+  str_split('\\|', simplify = TRUE)
 ```
-Split the data on the pipe character
-```{r}
-split_values <- str_split(split, '\\|', simplify=TRUE)
 
-```
-filter out empty rows
+Convert to a dataframe and use the filter function to remove empty rows
 ```{r}
-df <- as.data.frame(split_values) %>% filter(V1 != "", V1 != "\r")
+df <- as.data.frame(split) %>%
+  filter(V1 != "", V1 != "\r")
 ```
-Break up the dataframe into two dataframes so they can be recombined because two rows represent a single record. Set the column names to the first row
+
+### Manipulate the dataframe
+
+At this point we have a dataframe which contains all our data in individual rows but there are two rows representing a single player record. This is because the raw data was structured in such a way that a logical row was actually represented as two newline separated lines in the text file. 
+
+Break up the dataframe into two dataframes so they can be recombined as a single row.
 ```{r}
 df_one <- df %>% filter(row_number() %% 2 == 1) 
-names(df_one) <- df_one[1,]
 df_two <- df %>% filter(row_number() %% 2 == 0)
-names(df_two) <- df_two[1,]
-
 ```
-Merge the two dataframes back into a single data frame. Drop the first row
+Set the column names to the first row
+```{r}
+names(df_one) <- df_one[1,]
+names(df_one) <- df_one[1,]
+```
+Merge the two dataframes back into a single data frame. I am also using the `subset` combined with the `select` function to drop two columns that contain no data.
 ```{r}
 data <- bind_cols(df_one,df_two) %>% 
   subset(select=-c(11,22))
+```
+
+Drop the first row because it contained the column names and we no longer need that.
+```{r}
 data <- data[-c(1),]
 ```
 
+Split column 12 which contains the USCF Id and the Pre and Post ratings for the the player. Then split the pre and post ratings into separate columns as well.
 ```{r}
 data <- separate(data, 12, sep="/", into = c('USCF_ID','PRE_POST'))
 data <- separate(data, 13, sep=">", into = c('Pre_Rating','Post_Rating'))
 
 ```
 
-Remove P and values after from Pre_Rating Column
+Parse the Pre rating column as a number so it can be used in subsequent calculation
 ```{r}
 data$Pre_Rating <- parse_number(data$Pre_Rating)
 ```
 
+### Computing Opponent's Pre-Rating Mean
+
+1. Loop over every row. 
+2. Select the "Rounds" columns (4 through 10). 
+3. Because those contain the row number of the opponent parse out that value as a number using `gsub` to replace all non-numeric characters with no value. 
+4. Then us `as.numeric` to cast the values as numbers to be used as indexes in the dataframe.
+5. Use the opponent index vector to select the opponents pre-ratings.
+6. Use the mean function to obtain the average opponent pre-rating with the `na.rm` argument set to `TRUE` in order to remove `NA` values where opponents were not part of the round for the player.
+7. Round the mean to the nearest whole value using the `round` function and add that value as a new column in the dataframe.
 ```{r}
 for (i in 1:nrow(data)){
   opponent_indexes <- as.numeric(gsub("[^0-9]","",data[i,4:10]))
-  opponent_indexes<-opponent_indexes[!is.na(opponent_indexes)]
   opponents_ratings<-data[opponent_indexes,13]
-  rating_average <- sum(opponents_ratings) / length(opponents_ratings)
-  data$Average_Opponent_Pre_Rating[i] <- round(rating_average)
+  rating_average <- mean(opponents_ratings, na.rm = TRUE)
+  data$Mean_Opponent_Pre_Rating[i] <- round(rating_average)
 }
 ```
 
+### Clean up for final output
+1. Select only relevant columns
+2. Remove the `R:` from the player's pre-rating.
+3. Rename the columns
+4. Reset the row numbers 
 ```{r}
 final_output <- data[,c(2,3,11,13,23)]
 final_output$Pre_Rating <- gsub("R:", "", final_output$Pre_Rating)
-print(final_output)
+names(final_output) <- c('Player’s Name', 'Total Number of Points','Player’s State', 'Player’s Pre-Rating', 'Average Pre Chess Rating of Opponents')
+rownames(final_output) <- NULL
 ```
 
 
 ```{r}
+kable(final_output,caption="Players",digits = 2, format = "html", row.names = TRUE)
 #write_csv(final_output, "final_output.csv")
+```
+
+```{r}
+print(getwd())
 ```
