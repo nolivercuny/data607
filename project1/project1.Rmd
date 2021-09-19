@@ -112,20 +112,23 @@ for (i in 1:nrow(data)){
 1. Select only relevant columns
 2. Remove the `R:` from the player's pre-rating.
 3. Rename the columns
-4. Reset the row numbers 
+4. Trim whitespace
+5. Reset the row numbers 
 ```{r}
 final_output <- data[,c(2,3,11,13,23)]
 final_output$Pre_Rating <- gsub("R:", "", final_output$Pre_Rating)
 names(final_output) <- c('Player’s Name', 'Total Number of Points','Player’s State', 'Player’s Pre-Rating', 'Average Pre Chess Rating of Opponents')
+final_output <- final_output %>% 
+  mutate(across(where(is.character), str_trim))
 rownames(final_output) <- NULL
 ```
 
 
 ```{r}
 kable(final_output,caption="Players",digits = 2, format = "html", row.names = TRUE)
-#write_csv(final_output, "final_output.csv")
 ```
 
 ```{r}
-print(getwd())
+working_directory <- getwd()
+write_csv(final_output,paste(working_directory, "/chess_tournement_players.csv",sep=""))
 ```
