@@ -33,23 +33,23 @@ raw_data <- getURL(file_url)
 
 ## Processing
 
-### Converting giant string to dataframe
+### Converting raw text string to dataframe
 
-Get rid of dashes. At this point the data is one very long string.
+Get rid of dashes
 ```{r}
-data <- str_replace_all(raw_data,"-", "")
+raw_data <- str_replace_all(raw_data,"-", "")
 ```
 
-Split the data on newlines then on the pipe character
+Split the data on newlines then on the pipe character. Newlines being the logical separator between the rows and the pipe character being the separator of the columns.
 ```{r}
-split <- data %>% 
+split_data<- raw_data %>% 
   str_split('\n', simplify = TRUE) %>% 
   str_split('\\|', simplify = TRUE)
 ```
 
 Convert to a dataframe and use the filter function to remove empty rows
 ```{r}
-df <- as.data.frame(split) %>%
+df <- as.data.frame(split_data) %>%
   filter(V1 != "", V1 != "\r")
 ```
 
@@ -57,12 +57,12 @@ df <- as.data.frame(split) %>%
 
 At this point we have a dataframe which contains all our data in individual rows but there are two rows representing a single player record. This is because the raw data was structured in such a way that a logical row was actually represented as two newline separated lines in the text file. 
 
-Break up the dataframe into two dataframes so they can be recombined as a single row.
+Break up the dataframe into two dataframes so they can be recombined as a single row. This is done by using the modulus operator to split into even and odd rows.
 ```{r}
 df_one <- df %>% filter(row_number() %% 2 == 1) 
 df_two <- df %>% filter(row_number() %% 2 == 0)
 ```
-Set the column names to the first row
+Set the column names to the first row.
 ```{r}
 names(df_one) <- df_one[1,]
 names(df_one) <- df_one[1,]
@@ -94,7 +94,7 @@ data$Pre_Rating <- parse_number(data$Pre_Rating)
 
 1. Loop over every row. 
 2. Select the "Rounds" columns (4 through 10). 
-3. Because those contain the row number of the opponent parse out that value as a number using `gsub` to replace all non-numeric characters with no value. 
+3. Because those contain the row number of the opponent. Parse out that value as a number using `gsub` to replace all non-numeric characters with no value. 
 4. Then us `as.numeric` to cast the values as numbers to be used as indexes in the dataframe.
 5. Use the opponent index vector to select the opponents pre-ratings.
 6. Use the mean function to obtain the average opponent pre-rating with the `na.rm` argument set to `TRUE` in order to remove `NA` values where opponents were not part of the round for the player.
@@ -123,11 +123,13 @@ final_output <- final_output %>%
 rownames(final_output) <- NULL
 ```
 
-
+Display the values as a table for double checking before outputing to a CSV
 ```{r}
 kable(final_output,caption="Players",digits = 2, format = "html", row.names = TRUE)
 ```
+### Write out the results as CSV
 
+Making an attempt at being agnostic about file systems by trying to get the working directory and using that as the location to write out the CSV.
 ```{r}
 working_directory <- getwd()
 write_csv(final_output,paste(working_directory, "/chess_tournement_players.csv",sep=""))

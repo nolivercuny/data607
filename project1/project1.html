@@ -163,25 +163,25 @@ a.sourceLine {
 </div>
 <div id="processing" class="section level2">
 <h2>Processing</h2>
-<div id="converting-giant-string-to-dataframe" class="section level3">
-<h3>Converting giant string to dataframe</h3>
-<p>Get rid of dashes. At this point the data is one very long string.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">str_replace_all</span>(raw_data,<span class="st">&quot;-&quot;</span>, <span class="st">&quot;&quot;</span>)</span></code></pre></div>
-<p>Split the data on newlines then on the pipe character</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>split <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
+<div id="converting-raw-text-string-to-dataframe" class="section level3">
+<h3>Converting raw text string to dataframe</h3>
+<p>Get rid of dashes</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">str_replace_all</span>(raw_data,<span class="st">&quot;-&quot;</span>, <span class="st">&quot;&quot;</span>)</span></code></pre></div>
+<p>Split the data on newlines then on the pipe character. Newlines being the logical separator between the rows and the pipe character being the separator of the columns.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>split_data<span class="ot">&lt;-</span> raw_data <span class="sc">%&gt;%</span> </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split</span>(<span class="st">&#39;</span><span class="sc">\n</span><span class="st">&#39;</span>, <span class="at">simplify =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_split</span>(<span class="st">&#39;</span><span class="sc">\\</span><span class="st">|&#39;</span>, <span class="at">simplify =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p>Convert to a dataframe and use the filter function to remove empty rows</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(split) <span class="sc">%&gt;%</span></span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(split_data) <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(V1 <span class="sc">!=</span> <span class="st">&quot;&quot;</span>, V1 <span class="sc">!=</span> <span class="st">&quot;</span><span class="sc">\r</span><span class="st">&quot;</span>)</span></code></pre></div>
 </div>
 <div id="manipulate-the-dataframe" class="section level3">
 <h3>Manipulate the dataframe</h3>
 <p>At this point we have a dataframe which contains all our data in individual rows but there are two rows representing a single player record. This is because the raw data was structured in such a way that a logical row was actually represented as two newline separated lines in the text file.</p>
-<p>Break up the dataframe into two dataframes so they can be recombined as a single row.</p>
+<p>Break up the dataframe into two dataframes so they can be recombined as a single row. This is done by using the modulus operator to split into even and odd rows.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df_one <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">row_number</span>() <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">1</span>) </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>df_two <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">row_number</span>() <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span>)</span></code></pre></div>
-<p>Set the column names to the first row</p>
+<p>Set the column names to the first row.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df_one) <span class="ot">&lt;-</span> df_one[<span class="dv">1</span>,]</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df_one) <span class="ot">&lt;-</span> df_one[<span class="dv">1</span>,]</span></code></pre></div>
 <p>Merge the two dataframes back into a single data frame. I am also using the <code>subset</code> combined with the <code>select</code> function to drop two columns that contain no data.</p>
@@ -207,7 +207,7 @@ a.sourceLine {
 <ol style="list-style-type: decimal">
 <li>Loop over every row.</li>
 <li>Select the “Rounds” columns (4 through 10).</li>
-<li>Because those contain the row number of the opponent parse out that value as a number using <code>gsub</code> to replace all non-numeric characters with no value.</li>
+<li>Because those contain the row number of the opponent. Parse out that value as a number using <code>gsub</code> to replace all non-numeric characters with no value.</li>
 <li>Then us <code>as.numeric</code> to cast the values as numbers to be used as indexes in the dataframe.</li>
 <li>Use the opponent index vector to select the opponents pre-ratings.</li>
 <li>Use the mean function to obtain the average opponent pre-rating with the <code>na.rm</code> argument set to <code>TRUE</code> in order to remove <code>NA</code> values where opponents were not part of the round for the player.</li>
@@ -226,145 +226,17 @@ a.sourceLine {
 <li>Select only relevant columns</li>
 <li>Remove the <code>R:</code> from the player’s pre-rating.</li>
 <li>Rename the columns</li>
+<li>Trim whitespace</li>
 <li>Reset the row numbers</li>
 </ol>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>final_output <span class="ot">&lt;-</span> data[,<span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">11</span>,<span class="dv">13</span>,<span class="dv">23</span>)]</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>final_output<span class="sc">$</span>Pre_Rating <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;R:&quot;</span>, <span class="st">&quot;&quot;</span>, final_output<span class="sc">$</span>Pre_Rating)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(final_output) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;Player’s Name&#39;</span>, <span class="st">&#39;Total Number of Points&#39;</span>,<span class="st">&#39;Player’s State&#39;</span>, <span class="st">&#39;Player’s Pre-Rating&#39;</span>, <span class="st">&#39;Average Pre Chess Rating of Opponents&#39;</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>final_output <span class="sc">%&gt;%</span> </span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), str_trim))</span></code></pre></div>
-<pre><code>##                Player’s Name Total Number of Points Player’s State
-## 2                   GARY HUA                    6.0             ON
-## 3            DAKSHESH DARURI                    6.0             MI
-## 4               ADITYA BAJAJ                    6.0             MI
-## 5        PATRICK H SCHILLING                    5.5             MI
-## 6                 HANSHI ZUO                    5.5             MI
-## 7                HANSEN SONG                    5.0             OH
-## 8          GARY DEE SWATHELL                    5.0             MI
-## 9           EZEKIEL HOUGHTON                    5.0             MI
-## 10               STEFANO LEE                    5.0             ON
-## 11                 ANVIT RAO                    5.0             MI
-## 12  CAMERON WILLIAM MC LEMAN                    4.5             MI
-## 13            KENNETH J TACK                    4.5             MI
-## 14         TORRANCE HENRY JR                    4.5             MI
-## 15              BRADLEY SHAW                    4.5             MI
-## 16    ZACHARY JAMES HOUGHTON                    4.5             MI
-## 17              MIKE NIKITIN                    4.0             MI
-## 18        RONALD GRZEGORCZYK                    4.0             MI
-## 19             DAVID SUNDEEN                    4.0             MI
-## 20              DIPANKAR ROY                    4.0             MI
-## 21               JASON ZHENG                    4.0             MI
-## 22             DINH DANG BUI                    4.0             ON
-## 23          EUGENE L MCCLURE                    4.0             MI
-## 24                  ALAN BUI                    4.0             ON
-## 25         MICHAEL R ALDRICH                    4.0             MI
-## 26          LOREN SCHWIEBERT                    3.5             MI
-## 27                   MAX ZHU                    3.5             ON
-## 28            GAURAV GIDWANI                    3.5             MI
-## 29 SOFIA ADINA STANESCUBELLU                    3.5             MI
-## 30          CHIEDOZIE OKORIE                    3.5             MI
-## 31        GEORGE AVERY JONES                    3.5             ON
-## 32              RISHI SHETTY                    3.5             MI
-## 33     JOSHUA PHILIP MATHEWS                    3.5             ON
-## 34                   JADE GE                    3.5             MI
-## 35    MICHAEL JEFFERY THOMAS                    3.5             MI
-## 36          JOSHUA DAVID LEE                    3.5             MI
-## 37             SIDDHARTH JHA                    3.5             MI
-## 38      AMIYATOSH PWNANANDAM                    3.5             MI
-## 39                 BRIAN LIU                    3.0             MI
-## 40             JOEL R HENDON                    3.0             MI
-## 41              FOREST ZHANG                    3.0             MI
-## 42       KYLE WILLIAM MURPHY                    3.0             MI
-## 43                  JARED GE                    3.0             MI
-## 44         ROBERT GLEN VASEY                    3.0             MI
-## 45        JUSTIN D SCHILLING                    3.0             MI
-## 46                 DEREK YAN                    3.0             MI
-## 47  JACOB ALEXANDER LAVALLEY                    3.0             MI
-## 48               ERIC WRIGHT                    2.5             MI
-## 49              DANIEL KHAIN                    2.5             MI
-## 50          MICHAEL J MARTIN                    2.5             MI
-## 51                SHIVAM JHA                    2.5             MI
-## 52            TEJAS AYYAGARI                    2.5             MI
-## 53                 ETHAN GUO                    2.5             MI
-## 54             JOSE C YBARRA                    2.0             MI
-## 55               LARRY HODGE                    2.0             MI
-## 56                 ALEX KONG                    2.0             MI
-## 57              MARISA RICCI                    2.0             MI
-## 58                MICHAEL LU                    2.0             MI
-## 59              VIRAJ MOHILE                    2.0             MI
-## 60         SEAN M MC CORMICK                    2.0             MI
-## 61                JULIA SHEN                    1.5             MI
-## 62             JEZZEL FARKAS                    1.5             ON
-## 63             ASHWIN BALAJI                    1.0             MI
-## 64      THOMAS JOSEPH HOSMER                    1.0             MI
-## 65                    BEN LI                    1.0             MI
-##    Player’s Pre-Rating Average Pre Chess Rating of Opponents
-## 2                 1794                                  1605
-## 3                 1553                                  1469
-## 4                 1384                                  1564
-## 5                 1716                                  1574
-## 6                 1655                                  1501
-## 7                 1686                                  1519
-## 8                 1649                                  1372
-## 9                 1641                                  1468
-## 10                1411                                  1523
-## 11                1365                                  1554
-## 12                1712                                  1468
-## 13                1663                                  1506
-## 14                1666                                  1498
-## 15                1610                                  1515
-## 16                1220                                  1484
-## 17                1604                                  1386
-## 18                1629                                  1499
-## 19                1600                                  1480
-## 20                1564                                  1426
-## 21                1595                                  1411
-## 22                1563                                  1470
-## 23                1555                                  1300
-## 24                1363                                  1214
-## 25                1229                                  1357
-## 26                1745                                  1363
-## 27                1579                                  1507
-## 28                1552                                  1222
-## 29                1507                                  1522
-## 30                1602                                  1314
-## 31                1522                                  1144
-## 32                1494                                  1260
-## 33                1441                                  1379
-## 34                1449                                  1277
-## 35                1399                                  1375
-## 36                1438                                  1150
-## 37                1355                                  1388
-## 38                 980                                  1385
-## 39                1423                                  1539
-## 40                1436                                  1430
-## 41                1348                                  1391
-## 42                1403                                  1248
-## 43                1332                                  1150
-## 44                1283                                  1107
-## 45                1199                                  1327
-## 46                1242                                  1152
-## 47                 377                                  1358
-## 48                1362                                  1392
-## 49                1382                                  1356
-## 50                1291                                  1286
-## 51                1056                                  1296
-## 52                1011                                  1356
-## 53                 935                                  1495
-## 54                1393                                  1345
-## 55                1270                                  1206
-## 56                1186                                  1406
-## 57                1153                                  1414
-## 58                1092                                  1363
-## 59                 917                                  1391
-## 60                 853                                  1319
-## 61                 967                                  1330
-## 62                 955                                  1327
-## 63                1530                                  1186
-## 64                1175                                  1350
-## 65                1163                                  1263</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(final_output) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(final_output,<span class="at">caption=</span><span class="st">&quot;Players&quot;</span>,<span class="at">digits =</span> <span class="dv">2</span>, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>, <span class="at">row.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>final_output <span class="ot">&lt;-</span> final_output <span class="sc">%&gt;%</span> </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), str_trim))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(final_output) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
+<p>Display the values as a table for double checking before outputing to a CSV</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(final_output,<span class="at">caption=</span><span class="st">&quot;Players&quot;</span>,<span class="at">digits =</span> <span class="dv">2</span>, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>, <span class="at">row.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <table>
 <caption>
 Players
@@ -1673,8 +1545,12 @@ MI
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>working_directory <span class="ot">&lt;-</span> <span class="fu">getwd</span>()</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(final_output,<span class="fu">paste</span>(working_directory, <span class="st">&quot;/chess_tournement_players.csv&quot;</span>,<span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span></code></pre></div>
+</div>
+<div id="write-out-the-results-as-csv" class="section level3">
+<h3>Write out the results as CSV</h3>
+<p>Making an attempt at being agnostic about file systems by trying to get the working directory and using that as the location to write out the CSV.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>working_directory <span class="ot">&lt;-</span> <span class="fu">getwd</span>()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(final_output,<span class="fu">paste</span>(working_directory, <span class="st">&quot;/chess_tournement_players.csv&quot;</span>,<span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span></code></pre></div>
 </div>
 </div>
 </div>
