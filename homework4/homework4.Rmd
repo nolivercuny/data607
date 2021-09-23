@@ -1,0 +1,18 @@
+---
+title: "Homework 3"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+```{r load-libraries}
+library(tidyr)
+library(dplyr)
+```
+
+(1) Do you have enough information to calculate the total population?  What does this total population represent?
+(2) Calculate the Efficacy vs. Disease; Explain your results.
+(3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?

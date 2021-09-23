@@ -282,22 +282,22 @@ a.sourceLine {
 <h3>Start and end with the same character.</h3>
 <p>&quot;(.).*\1&quot;</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_view</span>(<span class="fu">c</span>(<span class="st">&quot;church&quot;</span>,<span class="st">&quot;banana&quot;</span>,<span class="st">&quot;apple&quot;</span>), <span class="st">&quot;(.).*</span><span class="sc">\\</span><span class="st">1&quot;</span>)</span></code></pre></div>
-<div id="htmlwidget-5c5a8bedb322d8855556" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5c5a8bedb322d8855556">{"x":{"html":"<ul>\n  <li><span class='match'>churc<\/span>h<\/li>\n  <li>b<span class='match'>anana<\/span><\/li>\n  <li>a<span class='match'>pp<\/span>le<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-0520aaa68aeb775052d8" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0520aaa68aeb775052d8">{"x":{"html":"<ul>\n  <li><span class='match'>churc<\/span>h<\/li>\n  <li>b<span class='match'>anana<\/span><\/li>\n  <li>a<span class='match'>pp<\/span>le<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="contain-a-repeated-pair-of-letters-e.g.-church-contains-ch-repeated-twice." class="section level3">
 <h3>Contain a repeated pair of letters (e.g. “church” contains “ch” repeated twice.)</h3>
 <p>&quot;.<em>(.)(.).</em>\1\2.*&quot;</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_view</span>(<span class="fu">c</span>(<span class="st">&quot;church&quot;</span>,<span class="st">&quot;banana&quot;</span>,<span class="st">&quot;apple&quot;</span>), <span class="st">&quot;.*(.)(.).*</span><span class="sc">\\</span><span class="st">1</span><span class="sc">\\</span><span class="st">2.*&quot;</span>)</span></code></pre></div>
-<div id="htmlwidget-761919a5a08e8ab5df95" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-761919a5a08e8ab5df95">{"x":{"html":"<ul>\n  <li><span class='match'>church<\/span><\/li>\n  <li><span class='match'>banana<\/span><\/li>\n  <li>apple<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-dfd5f8520167042f7958" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-dfd5f8520167042f7958">{"x":{"html":"<ul>\n  <li><span class='match'>church<\/span><\/li>\n  <li><span class='match'>banana<\/span><\/li>\n  <li>apple<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="contain-one-letter-repeated-in-at-least-three-places-e.g.-eleven-contains-three-es." class="section level3">
 <h3>Contain one letter repeated in at least three places (e.g. “eleven” contains three “e”s.)</h3>
 <p>“.<em>(.).</em>\1.<em>\1.</em>”</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str_view</span>(<span class="fu">c</span>(<span class="st">&quot;church&quot;</span>,<span class="st">&quot;banana&quot;</span>,<span class="st">&quot;apple&quot;</span>,<span class="st">&quot;eleven&quot;</span>), <span class="st">&quot;.*(.).*</span><span class="sc">\\</span><span class="st">1.*</span><span class="sc">\\</span><span class="st">1.*&quot;</span>)</span></code></pre></div>
-<div id="htmlwidget-ff3f8090f67b9273f170" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-ff3f8090f67b9273f170">{"x":{"html":"<ul>\n  <li>church<\/li>\n  <li><span class='match'>banana<\/span><\/li>\n  <li>apple<\/li>\n  <li><span class='match'>eleven<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-c21a53c5b03bce22e16f" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c21a53c5b03bce22e16f">{"x":{"html":"<ul>\n  <li>church<\/li>\n  <li><span class='match'>banana<\/span><\/li>\n  <li>apple<\/li>\n  <li><span class='match'>eleven<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
