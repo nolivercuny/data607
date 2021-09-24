@@ -13,6 +13,10 @@ library(tidyr)
 library(dplyr)
 ```
 
+```{r}
+raw <- read_csv("israeli_vaccination_data_analysis_start.csv")
+```
+
 (1) Do you have enough information to calculate the total population?  What does this total population represent?
 (2) Calculate the Efficacy vs. Disease; Explain your results.
 (3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?
