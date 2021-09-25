@@ -1,5 +1,5 @@
 ---
-title: "Homework 3"
+title: "Homework 4"
 author: "Nick Oliver"
 output:
   prettydoc::html_pretty:
@@ -11,12 +11,20 @@ editor_options:
 ```{r load-libraries}
 library(tidyr)
 library(dplyr)
+library(RCurl)
+```
+
+# Homework 4 - Tidying and Transforming Vaccination Data
+
+```{r}
+file_url <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/homework4/israeli_vaccination_data_analysis_start.csv'
+raw_data <- getURL(file_url)
 ```
 
 ```{r}
-raw <- read_csv("israeli_vaccination_data_analysis_start.csv")
 ```
+## (1) Do you have enough information to calculate the total population?  What does this total population represent?
 
-(1) Do you have enough information to calculate the total population?  What does this total population represent?
-(2) Calculate the Efficacy vs. Disease; Explain your results.
-(3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?
+## (2) Calculate the Efficacy vs. Disease; Explain your results.
+
+## (3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?
