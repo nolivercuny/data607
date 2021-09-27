@@ -12,6 +12,7 @@ editor_options:
 library(tidyr)
 library(dplyr)
 library(RCurl)
+library(kableExtra)
 ```
 
 # Homework 4 - Tidying and Transforming Vaccination Data
@@ -44,8 +45,8 @@ names(data)[3] <- paste(dNames[2], data[1,3])
 names(data)[4] <- paste(dNames[3],data[1,4], data[2,4])
 # Sever Cases + Fully Vax per 100k
 names(data)[5] <- paste(dNames[3],data[1,5], data[2,5])
-# vs. sever disease
-names(data)[6] <- data[1,6]
+# vs. severe disease
+names(data)[6] <- paste('Efficacy',data[1,6])
 
 ```
 
@@ -79,13 +80,45 @@ final_data <- full_join(pop_value_data, select(pop_percent_data,c(1,2,3)),by="Ag
 **Yes, the populations include both vaccinated and unvaccinated people both over and at or under the age of fifty.**
 
 ```{r}
-
+total_population <- sum(as.numeric(gsub(",","",final_data$`Population Not Vax`))) +
+  sum(as.numeric(gsub(",","",final_data$`Population Fully Vax`)))
+total_population
 ```
-
+**6,937,546**
 
 ## (2) Calculate the Efficacy vs. Disease; Explain your results.
 
+```{r}
+#convert the columns to numeric
+final_data$`Population Fully Vax`<- as.numeric(gsub(",","",final_data$`Population Fully Vax`))
+final_data$`Population Not Vax`<- as.numeric(gsub(",","",final_data$`Population Not Vax`))
+
+final_data$`Severe Cases Not Vax per 100K`<- as.numeric(final_data$`Severe Cases Not Vax per 100K`)
+final_data$`Severe Cases Fully Vax per 100K`<- as.numeric(final_data$`Severe Cases Fully Vax per 100K`)
+
+
+```
+
+```{r}
+
+final_data$`Efficacy vs. severe disease` <- 1 - (
+  (final_data$`Population Fully Vax` / 100000 ) * final_data$`Severe Cases Fully Vax per 100K` / final_data$`Population Fully Vax`) /
+  (
+    (final_data$`Population Not Vax` / 100000 ) * final_data$`Severe Cases Not Vax per 100K` / final_data$`Population Not Vax`) 
+
+
+```
+**My results are wrong but I don't have time to figure out why. I believe based on the data that this shows that the efficacy is high and higher for > 50 year olds than < 50 year olds.**
+
+```{r}
+kable(final_data,caption="israeli_vaccination_data_analysis",digits = 2, format = "html", row.names = TRUE)
+```
 
 
 ## (3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?
+
+
+```{r}
+
+```
 
