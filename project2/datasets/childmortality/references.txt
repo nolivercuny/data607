@@ -1,0 +1,7 @@
+https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/
+
+https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_53934801_1
+
+This dataset includes child-under-5 mortality rates for all countries from 1950 to 2015. The data is structured in wide format, where the column names include the country, and each year from 1950 to 2015. Values are the corresponding child mortality rates for that country, and that year. Restructuring this dataset into long format should be very easy to accomplish with the tidyr::gather().\
+
+This dataset would be a great starting point for analyzing mortality rates for children under 5 over time, by country. It would also be interesting to see if any country mortality rates are correlated over time. Monitoring spikes for mortality rate over time would be a good way to identify patterns or factors leading to child mortality.

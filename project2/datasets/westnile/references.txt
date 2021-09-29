@@ -1,0 +1,14 @@
+https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_54088437_1
+
+https://www.cdc.gov/westnile/statsmaps/cumMapsData.html
+
+
+There are two tables here with the cases each year in a separate column:
+
+West Nile virus disease cases reported to CDC by state of residence, 1999-2019
+
+West Nile virus neuroinvasive disease cases reported to CDC by state of residence, 1999-2019
+
+The totals per state & per year are already calculated, but the means are yet to be calculated.
+
+The year columns could be pivoted longer and the 2 tables could be combined. Percent of positive cases that developed into neuroinvasive disease could be calculated (per year / per state).
