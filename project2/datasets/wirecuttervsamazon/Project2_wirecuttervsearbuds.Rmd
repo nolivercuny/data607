@@ -1,0 +1,49 @@
+---
+title: "Project 2 Wirecutter v Amazon"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+# Project 2 - The Wirecutter Vs. Amazon
+
+The goal of this analysis is to evaluate the quality of The Wirecutter's product recommendations. I am suspicious that The Wirecutter is bad judge of quality due to my own personal experience of going to purchase a recommended product on Amazon and seeing generally negative sentiment about the product Some of the bad reviews even mentioned The Wirecutter's recommendation as their reason for buying the product.
+
+To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200. [https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/](https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/)
+
+## Setup
+
+### Load Libraries
+```{r}
+library(RCurl)
+library(stringr)
+library(dplyr)
+library(tidyr)
+```
+
+### Load Data
+
+```{r}
+reviewsUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/wirecuttervsamazon/Customer%20reviews'
+customerReviews <- getURL(reviewsUrl)
+fileUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/wirecuttervsamazon/wirecutter_earbuds.csv'
+wirecutterData <- getURL(fileUrl)
+```
+
+## Tidy
+
+The Amazon review data was scrapped directly from the product pages for the products reviewed by The Wirecutter. 
+
+```{r split}
+customerReviews <- str_replace_all(customerReviews, '\t','')
+customerReviewsList <- str_split(customerReviews, '\n')
+```
+
+
+```{r}
+spread(customerReviewsList, )
+```
