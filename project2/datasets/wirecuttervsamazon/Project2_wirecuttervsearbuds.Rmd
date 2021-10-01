@@ -45,5 +45,6 @@ customerReviewsList <- str_split(customerReviews, '\n')
 
 
 ```{r}
-spread(customerReviewsList, )
+take <- 19
+
 ```
