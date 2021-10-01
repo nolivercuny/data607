@@ -40,11 +40,11 @@ The Amazon review data was scrapped directly from the product pages for the prod
 
 ```{r split}
 customerReviews <- str_replace_all(customerReviews, '\t','')
-customerReviewsList <- str_split(customerReviews, '\n')
+#customerReviewsList <- str_split(customerReviews, '\n')
 ```
 
 
 ```{r}
-take <- 19
+
 
 ```
