@@ -45,6 +45,6 @@ customerReviews <- str_replace_all(customerReviews, '\t','')
 
 
 ```{r}
-
+stringr::str_extract_all(customerReviews,"Customer Reviews[\\s\\S]*?End Customer Reviews")
 
 ```
