@@ -176,7 +176,8 @@ a.sourceLine {
 <pre><code>## The following object is masked from &#39;package:dplyr&#39;:
 ## 
 ##     group_rows</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fuzzyjoin)</span></code></pre></div>
 </div>
 <div id="load-data" class="section level3">
 <h3>Load Data</h3>
@@ -205,125 +206,66 @@ a.sourceLine {
 <li>There are columns with meaningless data like <code>Customer Reviews</code></li>
 </ol>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>customerReviewsDf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(customerReviews, <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;data&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">&quot;data&quot;</span>,<span class="at">into=</span><span class="fu">paste</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">23</span>), <span class="st">&quot;&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\\</span><span class="st">n&#39;</span>)</span></code></pre></div>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">&quot;data&quot;</span>,<span class="at">into=</span><span class="fu">paste</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">23</span>), <span class="st">&quot;&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\\</span><span class="st">n&#39;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">&#39;1&#39;</span>,<span class="sc">-</span><span class="st">&#39;3&#39;</span>,<span class="sc">-</span><span class="st">&#39;5&#39;</span>,<span class="sc">-</span><span class="st">&#39;7&#39;</span>,<span class="sc">-</span><span class="st">&#39;9&#39;</span>,<span class="sc">-</span><span class="st">&#39;11&#39;</span>,<span class="sc">-</span><span class="st">&#39;13&#39;</span>,<span class="sc">-</span><span class="st">&#39;16&#39;</span>,<span class="sc">-</span><span class="st">&#39;17&#39;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Rating =</span> <span class="st">&quot;2&quot;</span>, <span class="at">TotalRatings =</span> <span class="st">&quot;4&quot;</span>, <span class="at">FiveStar =</span> <span class="st">&#39;6&#39;</span>, <span class="at">FourStar =</span> <span class="st">&#39;8&#39;</span>,<span class="at">ThreeStar =</span> <span class="st">&#39;10&#39;</span>, <span class="at">TwoStar =</span> <span class="st">&#39;12&#39;</span>, <span class="at">OneStar =</span> <span class="st">&#39;14&#39;</span>, <span class="at">Name =</span> <span class="st">&#39;15&#39;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="st">&quot;Price&quot;</span>, <span class="st">&quot;18&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;20&quot;</span>,<span class="st">&quot;21&quot;</span>,<span class="st">&quot;22&quot;</span>,<span class="st">&quot;23&quot;</span>, <span class="at">sep=</span><span class="st">&quot;|&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <pre><code>## Warning: Expected 23 pieces. Missing pieces filled with `NA` in 25 rows [1, 2,
 ## 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, ...].</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(customerReviewsDf, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>customerReviewsDf<span class="sc">$</span>Price <span class="ot">=</span> <span class="fu">str_extract_all</span>(customerReviewsDf<span class="sc">$</span>Price,<span class="st">&#39;(?&lt;!List )Price:(</span><span class="sc">\\</span><span class="st">$(</span><span class="sc">\\</span><span class="st">d+)</span><span class="sc">\\</span><span class="st">.(</span><span class="sc">\\</span><span class="st">d+))&#39;</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(customerReviewsDf, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
-1
+Rating
 </th>
 <th style="text-align:left;">
-2
+TotalRatings
 </th>
 <th style="text-align:left;">
-3
+FiveStar
 </th>
 <th style="text-align:left;">
-4
+FourStar
 </th>
 <th style="text-align:left;">
-5
+ThreeStar
 </th>
 <th style="text-align:left;">
-6
+TwoStar
 </th>
 <th style="text-align:left;">
-7
+OneStar
 </th>
 <th style="text-align:left;">
-8
+Name
 </th>
 <th style="text-align:left;">
-9
-</th>
-<th style="text-align:left;">
-10
-</th>
-<th style="text-align:left;">
-11
-</th>
-<th style="text-align:left;">
-12
-</th>
-<th style="text-align:left;">
-13
-</th>
-<th style="text-align:left;">
-14
-</th>
-<th style="text-align:left;">
-15
-</th>
-<th style="text-align:left;">
-16
-</th>
-<th style="text-align:left;">
-17
-</th>
-<th style="text-align:left;">
-18
-</th>
-<th style="text-align:left;">
-19
-</th>
-<th style="text-align:left;">
-20
-</th>
-<th style="text-align:left;">
-21
-</th>
-<th style="text-align:left;">
-22
-</th>
-<th style="text-align:left;">
-23
+Price
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.1 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.1 out of 5
 </td>
 <td style="text-align:left;">
 10,010 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 59%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 16%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 9%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 7%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 9%
@@ -332,69 +274,27 @@ Customer Reviews
 1MORE Triple Driver In-Ear Earphones Hi-Res Headphones with High Resolution, Bass Driven Sound, MEMS Mic, In-Line Remote, High Fidelity for Smartphones/PC/Tablet - Silver
 </td>
 <td style="text-align:left;">
-Visit the 1MORE Store
-</td>
-<td style="text-align:left;">
-4.1 out of 5 stars 10,010 ratings | 531 answered questions
-</td>
-<td style="text-align:left;">
 Price:$70.77
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.2 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.2 out of 5
 </td>
 <td style="text-align:left;">
 183 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 59%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 18%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 7%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 11%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 5%
@@ -403,69 +303,27 @@ Customer Reviews
 Final E4000 High Resolution Sound Isolating In-Ear Headphones Earphones
 </td>
 <td style="text-align:left;">
-Visit the Final Audio Design Store
-</td>
-<td style="text-align:left;">
-4.2 out of 5 stars 183 ratings | 12 answered questions
-</td>
-<td style="text-align:left;">
-Price:$149.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$149.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.8 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.8 out of 5
 </td>
 <td style="text-align:left;">
 976 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 54%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 13%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 10%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 8%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 15%
@@ -474,69 +332,26 @@ Customer Reviews
 Marshall Mode in-Ear Headphones, Black/White (4090939)
 </td>
 <td style="text-align:left;">
-Visit the Marshall Store
-</td>
-<td style="text-align:left;">
-3.8 out of 5 stars 976 ratings | 20 answered questions
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.0 out of 5 stars
-</td>
-<td style="text-align:left;">
-4 out of 5
 </td>
 <td style="text-align:left;">
 6 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 75%
 </td>
 <td style="text-align:left;">
-4 star 0% (0%)
+0%
 </td>
 <td style="text-align:left;">
 0%
 </td>
 <td style="text-align:left;">
-3 star 0% (0%)
-</td>
-<td style="text-align:left;">
 0%
-</td>
-<td style="text-align:left;">
-2 star 0% (0%)
-</td>
-<td style="text-align:left;">
-0%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 25%
@@ -545,69 +360,27 @@ Customer Reviews
 Campfire Audio Satsuma in Ear Monitors - in Ear Headphones for Musicians - Professional IEM Earphones
 </td>
 <td style="text-align:left;">
-Visit the Campfire Audio Store
-</td>
-<td style="text-align:left;">
-4.0 out of 5 stars 6 ratings
-</td>
-<td style="text-align:left;">
-Price:$199.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$199.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.1 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.1 out of 5
 </td>
 <td style="text-align:left;">
 13 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 66%
 </td>
 <td style="text-align:left;">
-4 star
-</td>
-<td style="text-align:left;">
 11%
-</td>
-<td style="text-align:left;">
-3 star 0% (0%)
 </td>
 <td style="text-align:left;">
 0%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 11%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 12%
@@ -616,69 +389,27 @@ Customer Reviews
 Campfire Audio Honeydew in Ear Monitors - in Ear Headphones for Musicians - Professional IEM Earphones
 </td>
 <td style="text-align:left;">
-Visit the Campfire Audio Store
-</td>
-<td style="text-align:left;">
-4.1 out of 5 stars 13 ratings
-</td>
-<td style="text-align:left;">
-Price:$249.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$249.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.4 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.4 out of 5
 </td>
 <td style="text-align:left;">
 3,483 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 68%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 16%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 8%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 3%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 5%
@@ -687,69 +418,27 @@ Customer Reviews
 MEE audio M6 PRO Musiciansâ€™ In-Ear Monitors with Detachable Cables; Universal-Fit and Noise-Isolating (2nd Generation) (Black)
 </td>
 <td style="text-align:left;">
-Visit the MEE audio Store
-</td>
-<td style="text-align:left;">
-4.4 out of 5 stars 3,483 ratings | 158 answered questions
-</td>
-<td style="text-align:left;">
-Amazon’s
-</td>
-<td style="text-align:left;">
-Choice
-</td>
-<td style="text-align:left;">
-in Earbud &amp; In-Ear Headphones by MEE audio
-</td>
-<td style="text-align:left;">
-Price:$49.99 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
+Price:$49.99
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.3 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.3 out of 5
 </td>
 <td style="text-align:left;">
 122,071 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 65%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 17%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 9%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 4%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 5%
@@ -758,69 +447,27 @@ Customer Reviews
 Panasonic ErgoFit Earbud Headphones with Microphone and Call Controller Compatible with IPhone, Android and Blackberry - RP-TCM125-A - In-Ear (Blue)
 </td>
 <td style="text-align:left;">
-Visit the Panasonic Store
-</td>
-<td style="text-align:left;">
-4.3 out of 5 stars 122,071 ratings | 1000+ answered questions
-</td>
-<td style="text-align:left;">
-List Price:$19.99 Details
-</td>
-<td style="text-align:left;">
 Price:$14.90
-</td>
-<td style="text-align:left;">
-You Save:$5.09 (25%)
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.4 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.4 out of 5
 </td>
 <td style="text-align:left;">
 2,419 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 71%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 13%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 7%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 4%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 6%
@@ -829,69 +476,27 @@ Customer Reviews
 1MORE Quad Driver in-Ear Earphones Hi-Res High Fidelity Headphones Warm Bass, Spacious Reproduction, High Resolution, Mic in-Line Remote Smartphones/PC/Tablet - Silver/Gray
 </td>
 <td style="text-align:left;">
-Visit the 1MORE Store
-</td>
-<td style="text-align:left;">
-4.4 out of 5 stars 2,419 ratings | 152 answered questions
-</td>
-<td style="text-align:left;">
-Amazon’s
-</td>
-<td style="text-align:left;">
-Choice
-</td>
-<td style="text-align:left;">
-in Earbud &amp; In-Ear Headphones by 1MORE
-</td>
-<td style="text-align:left;">
-Price:$142.07 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
+Price:$142.07
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.2 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.2 out of 5
 </td>
 <td style="text-align:left;">
 1,123 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 64%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 14%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 11%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 4%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 8%
@@ -900,69 +505,27 @@ Customer Reviews
 beyerdynamic Soul BYRD wired premium in-ear headphones in black
 </td>
 <td style="text-align:left;">
-Visit the beyerdynamic Store
-</td>
-<td style="text-align:left;">
-4.2 out of 5 stars 1,123 ratings | 13 answered questions
-</td>
-<td style="text-align:left;">
-Price:$69.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$69.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.1 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.1 out of 5
 </td>
 <td style="text-align:left;">
 96 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 32%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 11%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 13%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 26%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 18%
@@ -971,69 +534,27 @@ Customer Reviews
 Brainwavz S3 Noise Isolating in-Ear Headphones | Earbuds | Earphones with Remote and Microphone
 </td>
 <td style="text-align:left;">
-Visit the BRAINWAVZ Store
-</td>
-<td style="text-align:left;">
-3.1 out of 5 stars 96 ratings | 10 answered questions
-</td>
-<td style="text-align:left;">
-Price:$29.50 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$29.50
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.4 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.4 out of 5
 </td>
 <td style="text-align:left;">
 341 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 70%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 15%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 7%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 4%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 3%
@@ -1042,69 +563,27 @@ Customer Reviews
 Etymotic Research ER2XR Extended Response High Performance In-Ear Earphones (Detachable Dynamic Drivers, Noise Isolating, High Accuracy, Robust Low Frequencies)
 </td>
 <td style="text-align:left;">
-Visit the Etymotic Research Store
-</td>
-<td style="text-align:left;">
-4.4 out of 5 stars 341 ratings | 21 answered questions
-</td>
-<td style="text-align:left;">
-List Price:$109.95 Details
-</td>
-<td style="text-align:left;">
-Price:$99.95 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$99.95
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.2 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.2 out of 5
 </td>
 <td style="text-align:left;">
 165 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 61%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 20%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 7%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 4%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 8%
@@ -1113,69 +592,27 @@ Customer Reviews
 Etymotic Research ER3SE Studio Edition High Performance In-Ear Earphones (Detachable Balanced Armature Drivers, Noise Isolating, High Accuracy, Studio Grade Accuracy),Black
 </td>
 <td style="text-align:left;">
-Visit the Etymotic Research Store
-</td>
-<td style="text-align:left;">
-4.2 out of 5 stars 165 ratings | 14 answered questions
-</td>
-<td style="text-align:left;">
-List Price:$159.95 Details
-</td>
-<td style="text-align:left;">
-Price:$101.75 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$101.75
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.7 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.7 out of 5
 </td>
 <td style="text-align:left;">
 385 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 80%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 14%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 2%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 2%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 1%
@@ -1184,69 +621,27 @@ Customer Reviews
 FiiO FH3 Triple Drive(1 Dynamic + 2 Knowles BA) in-Ear HiFi Earphones with High Resolution,Bass Sound, High Fidelity for Smartphones/PC/Tablet
 </td>
 <td style="text-align:left;">
-Visit the FiiO Store
-</td>
-<td style="text-align:left;">
-4.7 out of 5 stars 385 ratings | 11 answered questions
-</td>
-<td style="text-align:left;">
-Price:$129.99 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$129.99
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.0 out of 5 stars
-</td>
-<td style="text-align:left;">
-4 out of 5
 </td>
 <td style="text-align:left;">
 295 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 55%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 17%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 12%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 8%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 8%
@@ -1255,69 +650,27 @@ Customer Reviews
 Final Audio Design High Resolution Headphone - Stainless Steel (E3000) Black
 </td>
 <td style="text-align:left;">
-Visit the Final Audio Design Store
-</td>
-<td style="text-align:left;">
-4.0 out of 5 stars 295 ratings | 18 answered questions
-</td>
-<td style="text-align:left;">
-Amazon’s
-</td>
-<td style="text-align:left;">
-Choice
-</td>
-<td style="text-align:left;">
-in Earbud &amp; In-Ear Headphones by Final Audio Design
-</td>
-<td style="text-align:left;">
-List Price:$54.90 Details
-</td>
-<td style="text-align:left;">
-Price:$44.42 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
+Price:$44.42
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 5.0 out of 5 stars
-</td>
-<td style="text-align:left;">
-5 out of 5
 </td>
 <td style="text-align:left;">
 3 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 100%
 </td>
 <td style="text-align:left;">
-4 star 0% (0%)
+0%
 </td>
 <td style="text-align:left;">
 0%
 </td>
 <td style="text-align:left;">
-3 star 0% (0%)
-</td>
-<td style="text-align:left;">
 0%
-</td>
-<td style="text-align:left;">
-2 star 0% (0%)
-</td>
-<td style="text-align:left;">
-0%
-</td>
-<td style="text-align:left;">
-1 star 0% (0%)
 </td>
 <td style="text-align:left;">
 0%
@@ -1326,69 +679,27 @@ Customer Reviews
 Final Audio Design High Resolution Headphone - Black (F3100)
 </td>
 <td style="text-align:left;">
-Visit the Final Audio Design Store
-</td>
-<td style="text-align:left;">
-5.0 out of 5 stars 3 ratings
-</td>
-<td style="text-align:left;">
-Price:$189.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$189.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.1 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.1 out of 5
 </td>
 <td style="text-align:left;">
 35 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 55%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 21%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 8%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 8%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 8%
@@ -1397,69 +708,27 @@ Customer Reviews
 Yamaha EPH-M200RE High-Performance Earphones with Remote and Mic, Red
 </td>
 <td style="text-align:left;">
-Visit the Yamaha Audio Store
-</td>
-<td style="text-align:left;">
-4.1 out of 5 stars 35 ratings | 4 answered questions
-</td>
-<td style="text-align:left;">
 Price:$49.00
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.6 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.6 out of 5
 </td>
 <td style="text-align:left;">
 9 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 21%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 36%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 30%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 14%
-</td>
-<td style="text-align:left;">
-1 star 0% (0%)
 </td>
 <td style="text-align:left;">
 0%
@@ -1468,69 +737,26 @@ Customer Reviews
 YAMAHA EPH-M100 in-Ear Headphones Blue
 </td>
 <td style="text-align:left;">
-Brand: YAMAHA
-</td>
-<td style="text-align:left;">
-3.6 out of 5 stars 9 ratings
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.0 out of 5 stars
-</td>
-<td style="text-align:left;">
-4 out of 5
 </td>
 <td style="text-align:left;">
 248 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 56%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 17%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 7%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 10%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 10%
@@ -1539,69 +765,27 @@ Customer Reviews
 V-MODA Zn In-Ear Modern Audiophile Headphones with microphone - 3 Button
 </td>
 <td style="text-align:left;">
-Visit the V-MODA Store
-</td>
-<td style="text-align:left;">
-4.0 out of 5 stars 248 ratings | 38 answered questions
-</td>
-<td style="text-align:left;">
-List Price:$179.99 Details
-</td>
-<td style="text-align:left;">
-Price:$158.39 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$158.39
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.9 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.9 out of 5
 </td>
 <td style="text-align:left;">
 88 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 52%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 15%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 13%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 10%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 10%
@@ -1610,69 +794,27 @@ Customer Reviews
 V-MODA Forza Metallo In-Ear Headphones with 3-Button Remote &amp; Microphone - Samsung and Android Devices, Gunmetal Black
 </td>
 <td style="text-align:left;">
-Visit the V-MODA Store
-</td>
-<td style="text-align:left;">
-3.9 out of 5 stars 88 ratings | 7 answered questions
-</td>
-<td style="text-align:left;">
-Price:$121.28 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$121.28
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.8 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.8 out of 5
 </td>
 <td style="text-align:left;">
 17 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 48%
 </td>
 <td style="text-align:left;">
-4 star
+14%
 </td>
 <td style="text-align:left;">
 14%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 14%
-</td>
-<td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
-14%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 9%
@@ -1681,69 +823,27 @@ Customer Reviews
 Optoma NuForce HEM2 Reference Class Hi-Res in-Ear Headphones with Balanced Armature Drivers
 </td>
 <td style="text-align:left;">
-Visit the NuForce Store
-</td>
-<td style="text-align:left;">
-3.8 out of 5 stars 17 ratings | 4 answered questions
-</td>
-<td style="text-align:left;">
 Price:$129.00
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.6 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.6 out of 5
 </td>
 <td style="text-align:left;">
 17 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 27%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 34%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 26%
 </td>
 <td style="text-align:left;">
-2 star 0% (0%)
-</td>
-<td style="text-align:left;">
 0%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 14%
@@ -1752,69 +852,27 @@ Customer Reviews
 NuForce Hem Dynamic in-Ear Monitors Hi-Res Audio Noise Isolating Single Micro Dynamic Driver Microphone and Remote Charcoal Black (Hem-Dynamic-Black)
 </td>
 <td style="text-align:left;">
-Visit the NuForce Store
-</td>
-<td style="text-align:left;">
-3.6 out of 5 stars 17 ratings
-</td>
-<td style="text-align:left;">
-Price:$92.13 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$92.13
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 2.8 out of 5 stars
-</td>
-<td style="text-align:left;">
-2.8 out of 5
 </td>
 <td style="text-align:left;">
 31 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 20%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 15%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 16%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 23%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 26%
@@ -1823,69 +881,27 @@ Customer Reviews
 NAD VISO HP20 in-Ear Headphones in Black
 </td>
 <td style="text-align:left;">
-Brand: NAD
-</td>
-<td style="text-align:left;">
-2.8 out of 5 stars 31 ratings | 4 answered questions
-</td>
-<td style="text-align:left;">
-Price:$99.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$99.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.0 out of 5 stars
-</td>
-<td style="text-align:left;">
-4 out of 5
 </td>
 <td style="text-align:left;">
 15 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 51%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 28%
 </td>
 <td style="text-align:left;">
-3 star 0% (0%)
-</td>
-<td style="text-align:left;">
 0%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 10%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 10%
@@ -1894,69 +910,27 @@ Customer Reviews
 Monoprice MP80 Aluminum In-Ear Earphone, Balanced Armature Driver And Dynamic Driver With Three Tuning Nozzles
 </td>
 <td style="text-align:left;">
-Visit the Monoprice Store
-</td>
-<td style="text-align:left;">
-4.0 out of 5 stars 15 ratings
-</td>
-<td style="text-align:left;">
-List Price:$82.24 Details
-</td>
-<td style="text-align:left;">
-Price:$64.16 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$64.16
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 3.3 out of 5 stars
-</td>
-<td style="text-align:left;">
-3.3 out of 5
 </td>
 <td style="text-align:left;">
 70 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 39%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 10%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 13%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 17%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 22%
@@ -1965,69 +939,27 @@ Customer Reviews
 MEE audio Pinnacle P2 High Fidelity Audiophile In-Ear Headphones with Detachable Cables
 </td>
 <td style="text-align:left;">
-Visit the MEE audio Store
-</td>
-<td style="text-align:left;">
-3.3 out of 5 stars 70 ratings | 9 answered questions
-</td>
-<td style="text-align:left;">
-Price:$66.00 &amp;
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$66.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.2 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.2 out of 5
 </td>
 <td style="text-align:left;">
 271 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 59%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 16%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 14%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 4%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 7%
@@ -2036,69 +968,27 @@ Customer Reviews
 MEE audio Pinnacle P1 High Fidelity Audiophile In-Ear Headphones with Detachable Cables - EP-P1-ZN-MEE, Pinnacle P1 (Zinc)
 </td>
 <td style="text-align:left;">
-Visit the MEE audio Store
-</td>
-<td style="text-align:left;">
-4.2 out of 5 stars 271 ratings | 32 answered questions
-</td>
-<td style="text-align:left;">
-List Price:$199.99 Details
-</td>
-<td style="text-align:left;">
-Price:$159.35 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$159.35
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Customer Reviews
-</td>
-<td style="text-align:left;">
 4.1 out of 5 stars
-</td>
-<td style="text-align:left;">
-4.1 out of 5
 </td>
 <td style="text-align:left;">
 25 global ratings
 </td>
 <td style="text-align:left;">
-5 star
-</td>
-<td style="text-align:left;">
 58%
-</td>
-<td style="text-align:left;">
-4 star
 </td>
 <td style="text-align:left;">
 16%
 </td>
 <td style="text-align:left;">
-3 star
-</td>
-<td style="text-align:left;">
 8%
 </td>
 <td style="text-align:left;">
-2 star
-</td>
-<td style="text-align:left;">
 8%
-</td>
-<td style="text-align:left;">
-1 star
 </td>
 <td style="text-align:left;">
 9%
@@ -2107,28 +997,7 @@ Customer Reviews
 GRADO iGe3 Wired In Ear Headphone (earbuds) Smart Device Controller w/Microphone
 </td>
 <td style="text-align:left;">
-Brand: GRADO
-</td>
-<td style="text-align:left;">
-4.1 out of 5 stars 25 ratings | 6 answered questions
-</td>
-<td style="text-align:left;">
-Price:$99.00 &amp; FREE Returns
-</td>
-<td style="text-align:left;">
-End Customer Reviews
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
+Price:$99.00
 </td>
 </tr>
 </tbody>
@@ -2178,6 +1047,10 @@ NA
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
+</div>
+<div id="combining-data-sets" class="section level2">
+<h2>Combining Data Sets</h2>
+<p>Given that there are two data sets I need to combine them to do analysis. This presents a challenge because for the most part the name on Amazon does not match the name from The Wirecutter.</p>
 </div>
 </div>
 </div><!-- /.entry-content -->
