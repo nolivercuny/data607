@@ -46,7 +46,6 @@ westNileCasesRaw <- read.csv(westNileCasesUrl, sep = " ", skip = 1)
 #westNileCasesRaw <- getURL(westNileCasesUrl)
 westNileNeuroUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/westnile/West-Nile-virus-neuroinvasive-disease-cases-by-state_1999-2019-P.csv'
 westNileNeuroRaw <- read.csv(westNileNeuroUrl, sep = " ", skip = 1)
-#westNileNeuroRaw <- getURL(westNileNeuroUrl)
 ```
 
 ## Tidy
@@ -54,46 +53,103 @@ westNileNeuroRaw <- read.csv(westNileNeuroUrl, sep = " ", skip = 1)
 ```{r}
 westNileCasesDf <- westNileCasesRaw %>% 
   as.data.frame()
+westNileNeuroDf <- westNileNeuroRaw %>%
+  as.data.frame()
+```
 
+```{r}
+fix_dc <- function(df){
+  # District of Columbia 9,78
+dc <- df[9,] %>% unite(State,1:3, sep = " ")
+df[9,]$State <- dc[1,1]
+df[78,]$State <- dc[1,1]
+
+df[9,2:3] <- df[10,1:2]
+df[78,2:3] <- df[79,1:2]
+df
+}
+westNileCasesDf<-fix_dc(westNileCasesDf)
+westNileNeuroDf <-fix_dc(westNileNeuroDf)
 ```
 
 Fix DC because it's the only one that has three spaces in the name
 ```{r}
 # District of Columbia 9,78
-dc <- westNileCasesDf[9,] %>% unite(State,1:3, sep = " ")
-westNileCasesDf[9,]$State <- dc[1,1]
-westNileCasesDf[78,]$State <- dc[1,1]
+# dc <- westNileCasesDf[9,] %>% unite(State,1:3, sep = " ")
+# westNileCasesDf[9,]$State <- dc[1,1]
+# westNileCasesDf[78,]$State <- dc[1,1]
+# 
+# westNileCasesDf[9,2:3] <- westNileCasesDf[10,1:2]
+# westNileCasesDf[78,2:3] <- westNileCasesDf[79,1:2]
+```
 
-westNileCasesDf[9,2:3] <- westNileCasesDf[10,1:2]
-westNileCasesDf[78,2:3] <- westNileCasesDf[79,1:2]
+
+```{r}
+fix_states <- function(df){
+  #there is probably a clever way to find these
+statesWithSpaces <- c(31,33,35,37,39,41,47,49,51,53,61,100,102,104,106,108,110,116,118,120,122,130)
+for (index in statesWithSpaces) {
+  dc <- df[index,] %>% unite(State,1:2, sep = " ")
+  df[index,]$State <- dc[1,1]
+  df[index,2] <- df[index+1,1]
+
+}
+df
+}
+westNileCasesDf <- fix_states(westNileCasesDf)
+westNileNeuroDf <- fix_states(westNileNeuroDf)
 ```
 
 ```{r}
 #there is probably a clever way to find these
-statesWithSpaces <- c(31,33,35,37,39,41,47,49,51,53,61,100,102,104,106,108,110,116,118,120,122,130)
-for (index in statesWithSpaces) {
-  dc <- westNileCasesDf[index,] %>% unite(State,1:2, sep = " ")
-  westNileCasesDf[index,]$State <- dc[1,1]
-  westNileCasesDf[index,2] <- westNileCasesDf[index+1,1]
-}
+# statesWithSpaces <- c(31,33,35,37,39,41,47,49,51,53,61,100,102,104,106,108,110,116,118,120,122,130)
+# for (index in statesWithSpaces) {
+#   dc <- westNileCasesDf[index,] %>% unite(State,1:2, sep = " ")
+#   westNileCasesDf[index,]$State <- dc[1,1]
+#   westNileCasesDf[index,2] <- westNileCasesDf[index+1,1]
+# }
 ```
 
 Filter all the columns with bad/meaningless data. Had to do `gsub` because there were some rows where the number had a comma, which meant it was parsed as `NA` and didn't get filtered
 ```{r}
-westNileCasesDf <- westNileCasesDf %>% 
+# westNileCasesDf <- westNileCasesDf %>% 
+#   filter(is.na(as.numeric(gsub(",", "",State)))) %>% 
+#   mutate(across(where(is.character), str_trim))
+```
+```{r}
+casesDf <- westNileCasesDf %>% 
   filter(is.na(as.numeric(gsub(",", "",State)))) %>% 
   mutate(across(where(is.character), str_trim))
-```
 
+nueroDf <- westNileNeuroDf %>% 
+  filter(is.na(as.numeric(gsub(",", "",State)))) %>% 
+  mutate(across(where(is.character), str_trim))
+
+```
 Now we have two data sets combined into one. I will need to split the dataframe and recombined it by state.
 
 ```{r}
-df_one <- westNileCasesDf[1:52,]
-df_two <- westNileCasesDf[57:109,]
+# df_one <- westNileCasesDf[1:52,]
+# df_two <- westNileCasesDf[57:109,]
+# # this doesn't work right because the state, 2010, and 2011 have whitespace in them
+# names(df_two) <- df_two[1,]
+# df_two <- df_two[-c(1),]
+# westNileCasesFinalDf <- bind_cols(df_one,df_two) %>% 
+#   subset(select = -c(`State...13`))
+```
+```{r}
+recombine <- function(df) {
+  df_one <- df[1:52,]
+df_two <- df[57:109,]
 # this doesn't work right because the state, 2010, and 2011 have whitespace in them
 names(df_two) <- df_two[1,]
 df_two <- df_two[-c(1),]
-westNileCasesFinalDf <- bind_cols(df_one,df_two) %>% 
+bind_cols(df_one,df_two) %>% 
   subset(select = -c(`State...13`))
+}
 ```
+```{r}
 
+finalCasesDf <- recombine(casesDf)
+finalNeuroDf <- recombine(nueroDf)
+```
