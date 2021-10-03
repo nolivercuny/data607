@@ -43,7 +43,7 @@ westNileCasesUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/maste
 westNileCasesRaw <- read.csv(westNileCasesUrl, sep = " ", skip = 1)
 
 westNileNeuroUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/westnile/West-Nile-virus-neuroinvasive-disease-cases-by-state_1999-2019-P.csv'
-westNileNeuroRaw <- read.csv(westNileNeuroUrl, sep = " ", skip = 1)
+westNileNeuroRaw <- read.csv(westNileNeuroUrl, sep = " ")
 ```
 
 ## Tidy
