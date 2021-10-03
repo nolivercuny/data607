@@ -92,5 +92,8 @@ df_one <- westNileCasesDf[1:52,]
 df_two <- westNileCasesDf[57:109,]
 # this doesn't work right because the state, 2010, and 2011 have whitespace in them
 names(df_two) <- df_two[1,]
+df_two <- df_two[-c(1),]
+westNileCasesFinalDf <- bind_cols(df_one,df_two) %>% 
+  subset(select = -c(`State...13`))
 ```
 
