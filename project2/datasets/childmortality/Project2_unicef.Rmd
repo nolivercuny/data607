@@ -11,9 +11,13 @@ editor_options:
 
 # Project 2 - Unicef
 
-The goal of this analysis is to evaluate the quality of The Wirecutter's product recommendations. I am suspicious that The Wirecutter is bad judge of quality due to my own personal experience of going to purchase a recommended product on Amazon and seeing generally negative sentiment about the product Some of the bad reviews even mentioned The Wirecutter's recommendation as their reason for buying the product.
+https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/
 
-To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200. [https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/](https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/)
+https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_53934801_1
+
+This dataset includes child-under-5 mortality rates for all countries from 1950 to 2015. The data is structured in wide format, where the column names include the country, and each year from 1950 to 2015. Values are the corresponding child mortality rates for that country, and that year. Restructuring this dataset into long format should be very easy to accomplish with the tidyr::gather().\
+
+This dataset would be a great starting point for analyzing mortality rates for children under 5 over time, by country. It would also be interesting to see if any country mortality rates are correlated over time. Monitoring spikes for mortality rate over time would be a good way to identify patterns or factors leading to child mortality.
 
 ## Setup
 
@@ -25,109 +29,22 @@ library(dplyr)
 library(tidyr)
 library(kableExtra)
 library(readr)
-library(fuzzyjoin)
 ```
 
 ### Load Data
 
 ```{r}
-reviewsUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/wirecuttervsamazon/Customer%20reviews'
-customerReviewsRaw <- getURL(reviewsUrl)
-fileUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/wirecuttervsamazon/wirecutter_earbuds.csv'
-wirecutterDataRaw <- getURL(fileUrl)
+unicefUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/childmortality/unicef-u5mr.csv'
+unicefRaw <- read.csv(unicefUrl)
 ```
 
 ## Tidy
 
-### Amazon Scrapped Data
-
-The Amazon review data was scrapped directly from the product pages for the products reviewed by The Wirecutter. To make things a bit easier for myself I put `Customer Reviews` and `End Customer Reviews` between each scrapped block.
-
-
-First I am removing the tab character because it's not adding any value
-
-Next I use the `string_extract_all` function to grab all characters (including newlines) between `Customer Reviews` and `End Customer Reviews` because each block of text represents the review for one product.
-```{r split}
-customerReviews <- customerReviewsRaw %>% 
-  str_replace_all('\t','') %>%
-  str_extract_all("Customer Reviews[\\s\\S]*?End Customer Reviews")
-```
-
-Now I have a list where each item is a single review. I have 26 items in the list but the data is still one big long string. I used the `as.data.frame` function to turn the data into a 26 row data frame. I then use the `tidyr.separate` function to break out each list item into a wide dataframe structure. 
-
-The items are split into columns on the newline character. This gets us closer to where we want the data but there are still some issues. 
-
-1. The rating number and the percentage of users who gave it that rating are two separate columns e.g. (4 stars|45%). 
-2. Each listing wasn't uniform in its structure there are a number of columns with `NA` values near the end of the row.
-3. Column names don't make sense
-4. There are columns with meaningless data like `Customer Reviews`
-
-The regex used to extract the price from the combined columns was complex due to the fact that some product listings had multiple prices. 
-
-It looked something like this
-```
-List Price:	$19.99 Details
-Price:	$14.90
-You Save:	$5.09 (25%)
-```
-
-What made it even more complicated is the value we actually wanted was `Price:` but there is a value called `List Price:` so I couldn't just grab everything after the word `Price:`. I learned about something called a reverse look-up. 
-
-`(?<!List )` - This is a negative capture, reverse look-up. It's basically saying on this match, look backwards for anything that matches the string `List `. Then do **not** match this group. That is where the negative part comes in.
-`Price:(\\$(\\d+)\\.(\\d+))` - Match anything that starts with exactly `Price:` and starts with a dollar symbol followed by 1 or more digits followed by a decimal point, followed by 1 or more digits. 
-
-
-
 ```{r}
-#convert to data frame with one column
-customerReviewsDf <- as.data.frame(customerReviews, col.names = c("data")) %>%
-  #separate column into 23 new columns on newline character
-  # using trick to generate column names 1-23 with seq and paste to conver to strings
-  separate("data",into=paste(seq(1,23), "", sep=""),sep = '\\n') %>%
-  #remove unneeded columns
-  select(!c('1','3','5','7','9','11','13','16','17')) %>%
-  #rename rating % columns so they make sense
-  rename(Rating = "2", TotalRatings = "4", FiveStar = '6', FourStar = '8',ThreeStar = '10', TwoStar = '12', OneStar = '14', Name = '15') %>%
-  # combine the remaining columns so we can extract the price
-  unite(Price, "18","19","20","21","22","23", sep="|", na.rm = TRUE) %>%
-  # extract the price from price column.
-  # This was more complicated due to the fact that some of the combined columns contain other prices in addition to the sales price
-  mutate(Price = str_extract(Price,'(?<!List )Price:(\\$(\\d+)\\.(\\d+))'))
+unicefDf <- as.data.frame(unicefRaw) %>%
+  gather(year, u5mr, U5MR.1950:U5MR.2015) %>%
+  mutate(year = as.numeric(gsub("U5MR.", "", year)))
 ```
 
 
-Show the tidy data
-
-```{r}
-kable(customerReviewsDf, format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
-```
-
-### Wirecutter Data
-
-The Wirecutter review data is pretty basic CSV data with the product name and its "recommendation" level. 
-
-There are 4 levels of recommendations which roughly map to the following
-
-|recommendation|meaning|
-|--|--|
-|Top Pick|Buy this it's the best|
-|Budget Pick|Buy this if you're on a budget. Not as good as the `Top Pick` but still good|
-|Other good wired earbuds|Recommended with caveats|
-|the competition|Not recommended|
-
-
-
-```{r}
-wirecutterDf <- read_csv(wirecutterDataRaw, skip=1) %>% as.data.frame()
-```
-
-## Combining Data Sets
-
-Given that there are two data sets I need to combine them to do analysis. This presents a challenge because for the most part the name on Amazon does not match the name from The Wirecutter. 
-
-```{r}
-#fuzzy join
-```
-
-
-
+## Analysis
