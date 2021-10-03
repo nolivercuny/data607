@@ -126,7 +126,7 @@ wirecutterDf <- read_csv(wirecutterDataRaw, skip=1) %>% as.data.frame()
 Given that there are two data sets I need to combine them to do analysis. This presents a challenge because for the most part the name on Amazon does not match the name from The Wirecutter. 
 
 ```{r}
-#fuzzy join
+joinedDf <- left_join(wirecutterDf, customerReviewsDf, by = c("Amazon Name"  = "Name"))
 ```
 
 
