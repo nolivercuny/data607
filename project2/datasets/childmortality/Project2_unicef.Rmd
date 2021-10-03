@@ -12,6 +12,7 @@ editor_options:
 # Project 2 - Unicef
 
 https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/
+https://childmortality.org/data
 
 https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_53934801_1
 
@@ -34,7 +35,7 @@ library(readr)
 ### Load Data
 
 ```{r}
-unicefUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/childmortality/all_countries_deaths_u5_5_9_10_14_15_24.csv'
+unicefUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/childmortality/all_countries_dr_u5_5_9_10_14_15_24.csv'
 unicefRaw <- read.csv(unicefUrl)
 ```
 
@@ -45,6 +46,8 @@ Rename them so they are easier to work with
 Mutate year so it's a number and drop extra data from it
 Get the last year of data for each observation to make it easier to analyze. I do this with `group_by` and `slice_max` on Year. Interestingly this reveals that many indicators do not have data separated by genders. Because of this I also decided to filter out the gender specific observations and just keep the totals. After which point the sex column adds no additional information so it can be dropped.
 
+I also needed to account for the fact that in some cases there were multiple observations for the same indicator and same year. 
+
 ```{r}
 
 beforeColon <- "^(.*?): "
@@ -52,15 +55,16 @@ beforeColon <- "^(.*?): "
 unicefDf <- as.data.frame(unicefRaw) %>%
   select(c("REF_AREA.Geographic.area","INDICATOR.Indicator","SEX.Sex","TIME_PERIOD.Time.period","OBS_VALUE.Observation.Value" )) %>%
   rename(Country = "REF_AREA.Geographic.area", Indicator = "INDICATOR.Indicator", Sex = "SEX.Sex", Year = "TIME_PERIOD.Time.period", Value = "OBS_VALUE.Observation.Value") %>%
-  mutate(Year = as.numeric(gsub("-.*", "", Year)), Sex = gsub(beforeColon, "", Sex),Country = gsub(beforeColon, "", Country),Indicator = gsub(beforeColon, "", Indicator)) %>% 
-  filter(Sex == "Total") %>%
-  group_by(Country) %>% 
-  slice_max(Year) %>% 
-  pivot_wider(names_from = Indicator, values_from = Value)
-```
-
-```{r}
-unicef %>% pivot_wider(id_cols = c("Country","Year"))
+   mutate(Year = as.numeric(gsub("-.*", "", Year)), Sex = gsub(beforeColon, "", Sex),Country = gsub(beforeColon, "", Country),Indicator = gsub(beforeColon, "", Indicator)) %>% 
+   filter(Sex == "Total") %>%
+   group_by(Country) %>% 
+   slice_max(Year) %>% 
+   pivot_wider(names_from = Indicator, values_from = Value, values_fn = mean) %>%
+      select(-Sex, -Year)
 ```
 
 ## Analysis
+
+```{r}
+kable(unicefDf,caption = "Mortality rates (deaths / 1000 births) by Country for year of 2029", format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
+```
