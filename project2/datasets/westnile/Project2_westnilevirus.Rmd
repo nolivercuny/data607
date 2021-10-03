@@ -1,5 +1,5 @@
 ---
-title: "Project 2 Wirecutter v Amazon"
+title: "Project 2 West Nile Virus"
 author: "Nick Oliver"
 output:
   prettydoc::html_pretty:
@@ -9,11 +9,21 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Project 2 - The Wirecutter Vs. Amazon
+# Project 2 - West Nile Virus
 
-The goal of this analysis is to evaluate the quality of The Wirecutter's product recommendations. I am suspicious that The Wirecutter is bad judge of quality due to my own personal experience of going to purchase a recommended product on Amazon and seeing generally negative sentiment about the product Some of the bad reviews even mentioned The Wirecutter's recommendation as their reason for buying the product.
+https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_54088437_1
 
-To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200. [https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/](https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/)
+https://www.cdc.gov/westnile/statsmaps/cumMapsData.html
+
+There are two tables here with the cases each year in a separate column:
+
+West Nile virus disease cases reported to CDC by state of residence, 1999-2019
+
+West Nile virus neuroinvasive disease cases reported to CDC by state of residence, 1999-2019
+
+The totals per state & per year are already calculated, but the means are yet to be calculated.
+
+The year columns could be pivoted longer and the 2 tables could be combined. Percent of positive cases that developed into neuroinvasive disease could be calculated (per year / per state).
 
 ## Setup
 

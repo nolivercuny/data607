@@ -1,5 +1,5 @@
 ---
-title: "Project 2 Wirecutter v Amazon"
+title: "Project 2 Unicef"
 author: "Nick Oliver"
 output:
   prettydoc::html_pretty:
@@ -9,7 +9,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Project 2 - The Wirecutter Vs. Amazon
+# Project 2 - Unicef
 
 The goal of this analysis is to evaluate the quality of The Wirecutter's product recommendations. I am suspicious that The Wirecutter is bad judge of quality due to my own personal experience of going to purchase a recommended product on Amazon and seeing generally negative sentiment about the product Some of the bad reviews even mentioned The Wirecutter's recommendation as their reason for buying the product.
 
