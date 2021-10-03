@@ -29,13 +29,11 @@ The year columns could be pivoted longer and the 2 tables could be combined. Per
 
 ### Load Libraries
 ```{r}
-library(RCurl)
 library(stringr)
 library(dplyr)
 library(tidyr)
 library(kableExtra)
 library(readr)
-library(fuzzyjoin)
 ```
 
 ### Load Data
@@ -43,7 +41,7 @@ library(fuzzyjoin)
 ```{r}
 westNileCasesUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/westnile/West-Nile-virus-disease-cases-by-state_1999-2019-P.csv'
 westNileCasesRaw <- read.csv(westNileCasesUrl, sep = " ", skip = 1)
-#westNileCasesRaw <- getURL(westNileCasesUrl)
+
 westNileNeuroUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/westnile/West-Nile-virus-neuroinvasive-disease-cases-by-state_1999-2019-P.csv'
 westNileNeuroRaw <- read.csv(westNileNeuroUrl, sep = " ", skip = 1)
 ```
@@ -87,14 +85,14 @@ Fix DC because it's the only one that has three spaces in the name
 ```{r}
 fix_states <- function(df){
   #there is probably a clever way to find these
-statesWithSpaces <- c(31,33,35,37,39,41,47,49,51,53,61,100,102,104,106,108,110,116,118,120,122,130)
-for (index in statesWithSpaces) {
-  dc <- df[index,] %>% unite(State,1:2, sep = " ")
-  df[index,]$State <- dc[1,1]
-  df[index,2] <- df[index+1,1]
-
-}
-df
+  statesWithSpaces <- c(31,33,35,37,39,41,47,49,51,53,61,100,102,104,106,108,110,116,118,120,122,130)
+  for (index in statesWithSpaces) {
+    dc <- df[index,] %>% unite(State,1:2, sep = " ")
+    df[index,]$State <- dc[1,1]
+    df[index,2] <- df[index+1,1]
+  
+  }
+  df
 }
 westNileCasesDf <- fix_states(westNileCasesDf)
 westNileNeuroDf <- fix_states(westNileNeuroDf)
@@ -140,12 +138,11 @@ Now we have two data sets combined into one. I will need to split the dataframe 
 ```{r}
 recombine <- function(df) {
   df_one <- df[1:52,]
-df_two <- df[57:109,]
-# this doesn't work right because the state, 2010, and 2011 have whitespace in them
-names(df_two) <- df_two[1,]
-df_two <- df_two[-c(1),]
-bind_cols(df_one,df_two) %>% 
-  subset(select = -c(`State...13`))
+  df_two <- df[57:109,]
+  names(df_two) <- df_two[1,]
+  df_two <- df_two[-c(1),]
+  bind_cols(df_one,df_two) %>% 
+    subset(select = -c(`State...13`))
 }
 ```
 ```{r}
