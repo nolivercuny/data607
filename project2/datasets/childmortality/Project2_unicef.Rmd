@@ -24,12 +24,12 @@ This dataset would be a great starting point for analyzing mortality rates for c
 
 ### Load Libraries
 ```{r}
-library(RCurl)
 library(stringr)
 library(dplyr)
 library(tidyr)
 library(kableExtra)
 library(readr)
+library(ggplot2)
 ```
 
 ### Load Data
@@ -41,12 +41,15 @@ unicefRaw <- read.csv(unicefUrl)
 
 ## Tidy
 
-Grab only the relevant columns
-Rename them so they are easier to work with
-Mutate year so it's a number and drop extra data from it
-Get the last year of data for each observation to make it easier to analyze. I do this with `group_by` and `slice_max` on Year. Interestingly this reveals that many indicators do not have data separated by genders. Because of this I also decided to filter out the gender specific observations and just keep the totals. After which point the sex column adds no additional information so it can be dropped.
+Grab only the relevant columns (Country, Sex, Year, Indicator, Value)
 
-I also needed to account for the fact that in some cases there were multiple observations for the same indicator and same year. 
+Rename them so they are easier to work with
+
+Mutate "Year" so it's a number and drop extra data from it
+
+Get the last year of data for each observation to make it easier to analyze. I do this with `group_by` and `slice_max` on Year. Interestingly this reveals that many indicators do not have data separated by genders. Because of this I also decided to filter out the gender specific observations and just keep the totals. 
+
+The last step was to then make the data wider instead of longer so I could see how the mortality rate changed over time by country. I used the `pivot_wider` function to accomplish this. Unfortunately I discovered that some countries had multiple datasoruces for the Indicator per in a single year. I solved this by using the `value_fn` parameter and setting that to the mean. There are probably more nuanced ways of handling this but for my purposes this worked well enough in getting me a single value for the observation.
 
 ```{r}
 
@@ -67,4 +70,9 @@ unicefDf <- as.data.frame(unicefRaw) %>%
 
 ```{r}
 kable(unicefDf,caption = "Mortality rates (deaths / 1000 births) by Country for year of 2029", format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
+```
+
+```{r}
+unicefDf %>% ggplot(aes=(Country)) +
+  geom_histogram()
 ```
