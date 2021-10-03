@@ -118,7 +118,7 @@ There are 4 levels of recommendations which roughly map to the following
 
 
 ```{r}
-wirecutterDf <- read_csv(wirecutterDataRaw, skip=1) %>% as.data.frame()
+wirecutterDf <- read_csv(wirecutterDataRaw, skip=1, col_names = c("Name","Wirecutter Rating")) %>% as.data.frame()
 ```
 
 ## Combining Data Sets
