@@ -148,7 +148,7 @@ a.sourceLine {
 <div id="project-2---the-wirecutter-vs.-amazon" class="section level1">
 <h1>Project 2 - The Wirecutter Vs. Amazon</h1>
 <p>The goal of this analysis is to evaluate the quality of The Wirecutter’s product recommendations. I am suspicious that The Wirecutter is bad judge of quality due to my own personal experience of going to purchase a recommended product on Amazon and seeing generally negative sentiment about the product Some of the bad reviews even mentioned The Wirecutter’s recommendation as their reason for buying the product.</p>
-<p>To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200. <a href="https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/">https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/</a></p>
+<p>To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. <a href="https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/">https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/</a></p>
 <div id="setup" class="section level2">
 <h2>Setup</h2>
 <div id="load-libraries" class="section level3">
@@ -205,15 +205,31 @@ a.sourceLine {
 <li>Column names don’t make sense</li>
 <li>There are columns with meaningless data like <code>Customer Reviews</code></li>
 </ol>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>customerReviewsDf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(customerReviews, <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;data&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">&quot;data&quot;</span>,<span class="at">into=</span><span class="fu">paste</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">23</span>), <span class="st">&quot;&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\\</span><span class="st">n&#39;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="st">&#39;1&#39;</span>,<span class="sc">-</span><span class="st">&#39;3&#39;</span>,<span class="sc">-</span><span class="st">&#39;5&#39;</span>,<span class="sc">-</span><span class="st">&#39;7&#39;</span>,<span class="sc">-</span><span class="st">&#39;9&#39;</span>,<span class="sc">-</span><span class="st">&#39;11&#39;</span>,<span class="sc">-</span><span class="st">&#39;13&#39;</span>,<span class="sc">-</span><span class="st">&#39;16&#39;</span>,<span class="sc">-</span><span class="st">&#39;17&#39;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Rating =</span> <span class="st">&quot;2&quot;</span>, <span class="at">TotalRatings =</span> <span class="st">&quot;4&quot;</span>, <span class="at">FiveStar =</span> <span class="st">&#39;6&#39;</span>, <span class="at">FourStar =</span> <span class="st">&#39;8&#39;</span>,<span class="at">ThreeStar =</span> <span class="st">&#39;10&#39;</span>, <span class="at">TwoStar =</span> <span class="st">&#39;12&#39;</span>, <span class="at">OneStar =</span> <span class="st">&#39;14&#39;</span>, <span class="at">Name =</span> <span class="st">&#39;15&#39;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="st">&quot;Price&quot;</span>, <span class="st">&quot;18&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;20&quot;</span>,<span class="st">&quot;21&quot;</span>,<span class="st">&quot;22&quot;</span>,<span class="st">&quot;23&quot;</span>, <span class="at">sep=</span><span class="st">&quot;|&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The regex used to extract the price from the combined columns was complex due to the fact that some product listings had multiple prices.</p>
+<p>It looked something like this</p>
+<pre><code>List Price: $19.99 Details
+Price:  $14.90
+You Save:   $5.09 (25%)</code></pre>
+<p>What made it even more complicated is the value we actually wanted was <code>Price:</code> but there is a value called <code>List Price:</code> so I couldn’t just grab everything after the word <code>Price:</code>. I learned about something called a reverse look-up.</p>
+<p><code>(?&lt;!List )</code> - This is a negative capture, reverse look-up. It’s basically saying on this match, look backwards for anything that matches the string <code>List</code>. Then do <strong>not</strong> match this group. That is where the negative part comes in. <code>Price:(\\$(\\d+)\\.(\\d+))</code> - Match anything that starts with exactly <code>Price:</code> and starts with a dollar symbol followed by 1 or more digits followed by a decimal point, followed by 1 or more digits.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#convert to data frame with one column</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>customerReviewsDf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(customerReviews, <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;data&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#separate column into 23 new columns on newline character</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># using trick to generate column names 1-23 with seq and paste to conver to strings</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">&quot;data&quot;</span>,<span class="at">into=</span><span class="fu">paste</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">23</span>), <span class="st">&quot;&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\\</span><span class="st">n&#39;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#remove unneeded columns</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">c</span>(<span class="st">&#39;1&#39;</span>,<span class="st">&#39;3&#39;</span>,<span class="st">&#39;5&#39;</span>,<span class="st">&#39;7&#39;</span>,<span class="st">&#39;9&#39;</span>,<span class="st">&#39;11&#39;</span>,<span class="st">&#39;13&#39;</span>,<span class="st">&#39;16&#39;</span>,<span class="st">&#39;17&#39;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#rename rating % columns so they make sense</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Rating =</span> <span class="st">&quot;2&quot;</span>, <span class="at">TotalRatings =</span> <span class="st">&quot;4&quot;</span>, <span class="at">FiveStar =</span> <span class="st">&#39;6&#39;</span>, <span class="at">FourStar =</span> <span class="st">&#39;8&#39;</span>,<span class="at">ThreeStar =</span> <span class="st">&#39;10&#39;</span>, <span class="at">TwoStar =</span> <span class="st">&#39;12&#39;</span>, <span class="at">OneStar =</span> <span class="st">&#39;14&#39;</span>, <span class="at">Name =</span> <span class="st">&#39;15&#39;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># combine the remaining columns so we can extract the price</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(Price, <span class="st">&quot;18&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;20&quot;</span>,<span class="st">&quot;21&quot;</span>,<span class="st">&quot;22&quot;</span>,<span class="st">&quot;23&quot;</span>, <span class="at">sep=</span><span class="st">&quot;|&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract the price from price column.</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This was more complicated due to the fact that some of the combined columns contain other prices in addition to the sales price</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Price =</span> <span class="fu">str_extract</span>(Price,<span class="st">&#39;(?&lt;!List )Price:(</span><span class="sc">\\</span><span class="st">$(</span><span class="sc">\\</span><span class="st">d+)</span><span class="sc">\\</span><span class="st">.(</span><span class="sc">\\</span><span class="st">d+))&#39;</span>))</span></code></pre></div>
 <pre><code>## Warning: Expected 23 pieces. Missing pieces filled with `NA` in 25 rows [1, 2,
 ## 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, ...].</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>customerReviewsDf<span class="sc">$</span>Price <span class="ot">=</span> <span class="fu">str_extract_all</span>(customerReviewsDf<span class="sc">$</span>Price,<span class="st">&#39;(?&lt;!List )Price:(</span><span class="sc">\\</span><span class="st">$(</span><span class="sc">\\</span><span class="st">d+)</span><span class="sc">\\</span><span class="st">.(</span><span class="sc">\\</span><span class="st">d+))&#39;</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(customerReviewsDf, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<p>Show the tidy data</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(customerReviewsDf, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -332,6 +348,7 @@ Price:$149.00
 Marshall Mode in-Ear Headphones, Black/White (4090939)
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -737,6 +754,7 @@ Price:$49.00
 YAMAHA EPH-M100 in-Ear Headphones Blue
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -1038,11 +1056,11 @@ Price:$99.00
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>wirecutterDf <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(wirecutterDataRaw, <span class="at">skip=</span><span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>()</span></code></pre></div>
-<pre><code>## Rows: 36 Columns: 2</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>wirecutterDf <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(wirecutterDataRaw, <span class="at">skip=</span><span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>()</span></code></pre></div>
+<pre><code>## Rows: 36 Columns: 3</code></pre>
 <pre><code>## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
-## chr (2): Product Name, Wirecutter Rating</code></pre>
+## chr (3): Product Name, Wirecutter Rating, Amazon Name</code></pre>
 <pre><code>## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
@@ -1051,7 +1069,679 @@ Price:$99.00
 <div id="combining-data-sets" class="section level2">
 <h2>Combining Data Sets</h2>
 <p>Given that there are two data sets I need to combine them to do analysis. This presents a challenge because for the most part the name on Amazon does not match the name from The Wirecutter.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>joinedDf <span class="ot">&lt;-</span> <span class="fu">left_join</span>(wirecutterDf, customerReviewsDf, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;Amazon Name&quot;</span>  <span class="ot">=</span> <span class="st">&quot;Name&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">RatingNum =</span> <span class="fu">as.numeric</span>(<span class="fu">str_extract</span>(Rating,<span class="st">&quot;^</span><span class="sc">\\</span><span class="st">D*(</span><span class="sc">\\</span><span class="st">d+(?:</span><span class="sc">\\</span><span class="st">.</span><span class="sc">\\</span><span class="st">d+)?)&quot;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TotalRatingsNum =</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">&quot;[^0-9]&quot;</span>,<span class="st">&quot;&quot;</span>,TotalRatings)))</span></code></pre></div>
+<pre><code>## Warning: One or more parsing issues, see `problems()` for details</code></pre>
 </div>
+<div id="analysis" class="section level2">
+<h2>Analysis</h2>
+<p>To analyze my results I simple created a table with ordered by the rating out of 5 stars with the highest rated at the top.</p>
+<p>The evidence seems to support my suspicion that The Wirecutter’s recommendations are not representative of customer’s real world experiences with products.</p>
+<ol style="list-style-type: decimal">
+<li>The number one pick (Final E4000) ranks 6 out 36, below a similarly priced, higher rated, and more reviewed product (1More Quad Driver)</li>
+<li>Their budget pick (Marshall Mode) is 19 out of 36, with a rating of just 3.8. Unfortunately there was no price on this item on Amazon as it was no longer being sold but a low priced pair of earbuds (Final E3000 ) at $44.42, has a higher rating of 4.0 out of 5.0 and more reviews with 295 reviews.</li>
+</ol>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>joinedDf <span class="sc">%&gt;%</span>   </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(RatingNum)) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">`</span><span class="at">Product Name</span><span class="st">`</span>, <span class="st">`</span><span class="at">Wirecutter Rating</span><span class="st">`</span>,RatingNum, TotalRatingsNum, Price)<span class="sc">%&gt;%</span> </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>( <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Product Name
+</th>
+<th style="text-align:left;">
+Wirecutter Rating
+</th>
+<th style="text-align:right;">
+RatingNum
+</th>
+<th style="text-align:right;">
+TotalRatingsNum
+</th>
+<th style="text-align:left;">
+Price
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Final F3100
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+Price:$189.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FiiO FH3
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.7
+</td>
+<td style="text-align:right;">
+385
+</td>
+<td style="text-align:left;">
+Price:$129.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1More Quad Driver
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.4
+</td>
+<td style="text-align:right;">
+2419
+</td>
+<td style="text-align:left;">
+Price:$142.07
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Etymotic ER2XR
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.4
+</td>
+<td style="text-align:right;">
+341
+</td>
+<td style="text-align:left;">
+Price:$99.95
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Panasonic RP-TCM125 ErgoFit
+</td>
+<td style="text-align:left;">
+Other good wired earbuds
+</td>
+<td style="text-align:right;">
+4.3
+</td>
+<td style="text-align:right;">
+122071
+</td>
+<td style="text-align:left;">
+Price:$14.90
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Final E4000
+</td>
+<td style="text-align:left;">
+Top Pick
+</td>
+<td style="text-align:right;">
+4.2
+</td>
+<td style="text-align:right;">
+183
+</td>
+<td style="text-align:left;">
+Price:$149.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Beyerdynamic Soul Byrd
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.2
+</td>
+<td style="text-align:right;">
+1123
+</td>
+<td style="text-align:left;">
+Price:$69.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Etymotic ER3SE
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.2
+</td>
+<td style="text-align:right;">
+165
+</td>
+<td style="text-align:left;">
+Price:$101.75
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MEE Audio Pinnacle P1
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.2
+</td>
+<td style="text-align:right;">
+271
+</td>
+<td style="text-align:left;">
+Price:$159.35
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1More Triple Driver
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.1
+</td>
+<td style="text-align:right;">
+10010
+</td>
+<td style="text-align:left;">
+Price:$70.77
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Campfire Audio Honeydew
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.1
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:left;">
+Price:$249.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Grado iGe3
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.1
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:left;">
+Price:$99.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yamaha EPH-M200
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.1
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:left;">
+Price:$49.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Campfire Audio Satsuma
+</td>
+<td style="text-align:left;">
+Other good wired earbuds
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+Price:$199.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Final E3000
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+295
+</td>
+<td style="text-align:left;">
+Price:$44.42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Monoprice MP80
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:left;">
+Price:$64.16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V-Moda Zn
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+248
+</td>
+<td style="text-align:left;">
+Price:$158.39
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V-Moda Forza Metallo
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+3.9
+</td>
+<td style="text-align:right;">
+88
+</td>
+<td style="text-align:left;">
+Price:$121.28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Marshall Mode
+</td>
+<td style="text-align:left;">
+Budget Pick
+</td>
+<td style="text-align:right;">
+3.8
+</td>
+<td style="text-align:right;">
+976
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Optoma NuForce HEM2
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+3.8
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:left;">
+Price:$129.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Optoma NuForce HEM Dynamic
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+3.6
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:left;">
+Price:$92.13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yamaha EPH-M100
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+3.6
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MEE Audio Pinnacle P2
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+3.3
+</td>
+<td style="text-align:right;">
+70
+</td>
+<td style="text-align:left;">
+Price:$66.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Brainwavz S3
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+3.1
+</td>
+<td style="text-align:right;">
+96
+</td>
+<td style="text-align:left;">
+Price:$29.50
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NAD Viso HP20
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+2.8
+</td>
+<td style="text-align:right;">
+31
+</td>
+<td style="text-align:left;">
+Price:$99.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Honeydew
+</td>
+<td style="text-align:left;">
+Other good wired earbuds
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MEE Audio M6 Pro 2nd Generation
+</td>
+<td style="text-align:left;">
+Other good wired earbuds
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Flare Audio Flares Jet
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Marshall Mode EQ
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Massdrop x NuForce EDC
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Massdrop x NuForce EDC3
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Meze Audio Rai Solo
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Monoprice Quintet Wired In Ear Monitor
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sennheiser IE 100 Pro
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sennheiser IE 300
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Shure Aonic 4
+</td>
+<td style="text-align:left;">
+the competition
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="conclusions" class="section level2">
+<h2>Conclusions</h2>
+<p>While I did find some evidence to support my initial hypothesis, it is pretty weak evidence. If I truly wanted to support my claim there are a number of further steps I would need to take.</p>
+<ol style="list-style-type: decimal">
+<li>Collect more data from more products.</li>
+<li>Account for number of ratings with the rating value.</li>
+</ol>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The New York Times. (2013, October 6). The Best Wired earbuds. The New York Times. Retrieved October 4, 2021, from <a href="https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/" class="uri">https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/</a>.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
 </div><!-- /.entry-content -->
 </article>

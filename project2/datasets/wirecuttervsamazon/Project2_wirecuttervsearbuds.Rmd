@@ -13,7 +13,7 @@ editor_options:
 
 The goal of this analysis is to evaluate the quality of The Wirecutter's product recommendations. I am suspicious that The Wirecutter is bad judge of quality due to my own personal experience of going to purchase a recommended product on Amazon and seeing generally negative sentiment about the product Some of the bad reviews even mentioned The Wirecutter's recommendation as their reason for buying the product.
 
-To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200. [https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/](https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/)
+To perform my analysis I used the article that The Wirecutter posted with recommendations for the best wired earbuds under $200[^1]. [https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/](https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/)
 
 ## Setup
 
@@ -126,11 +126,42 @@ wirecutterDf <- read_csv(wirecutterDataRaw, skip=1) %>% as.data.frame()
 Given that there are two data sets I need to combine them to do analysis. This presents a challenge because for the most part the name on Amazon does not match the name from The Wirecutter. 
 
 ```{r}
-joinedDf <- left_join(wirecutterDf, customerReviewsDf, by = c("Amazon Name"  = "Name"))
+joinedDf <- left_join(wirecutterDf, customerReviewsDf, by = c("Amazon Name"  = "Name")) %>%
+  mutate(RatingNum = as.numeric(str_extract(Rating,"^\\D*(\\d+(?:\\.\\d+)?)"))) %>%
+  mutate(TotalRatingsNum = as.numeric(gsub("[^0-9]","",TotalRatings)))
 ```
 
+
 ## Analysis
+
+To analyze my results I simple created a table with ordered by the rating out of 5 stars with the highest rated at the top. 
+
+The evidence seems to support my suspicion that The Wirecutter's recommendations are not representative of customer's real world experiences with products.
+
+1. The number one pick (Final E4000) ranks 6 out 36, below a similarly priced, higher rated, and more reviewed product (1More Quad Driver)
+2. Their budget pick (Marshall Mode) is 19 out of 36, with a rating of just 3.8. Unfortunately there was no price on this item on Amazon as it was no longer being sold but a low priced pair of earbuds (Final E3000	) at $44.42, has a higher rating of 4.0 out of 5.0 and more reviews with 295 reviews. 
+
+```{r}
+joinedDf %>%   
+  arrange(desc(RatingNum)) %>% 
+  select(`Product Name`, `Wirecutter Rating`,RatingNum, TotalRatingsNum, Price)%>% 
+  
+  kable( format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
+```
+
+## Conclusions
+
+While I did find some evidence to support my initial hypothesis, it is pretty weak evidence. If I truly wanted to support my claim there are a number of further steps I would need to take.
+
+### Collect more data from more products.
+
+I only collected data from one article. It's completely possible The Wirecutter is just bad at rating wired earbuds. To get a better sample size I would have to do this across multiple different product types.
+
+### Account for number of ratings with the rating value. 
+
+My number one rated product has 5 out of 5 stars but only has 3 total reviews but there is a product with over one hundred thousand reviews that still has 4.3 out of 5 stars. One would probably be wise to weigh the rating with the more reviews more heavily than the rating with just 3 reviews. 
 
 ## References
 
 
+[^1]: The New York Times. (2013, October 6). The Best Wired earbuds. The New York Times. Retrieved October 4, 2021, from https://www.nytimes.com/wirecutter/reviews/the-best-200-in-ear-headphones/. 

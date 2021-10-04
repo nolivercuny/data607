@@ -150,3 +150,12 @@ recombine <- function(df) {
 finalCasesDf <- recombine(casesDf)
 finalNeuroDf <- recombine(nueroDf)
 ```
+
+## Analysis
+
+```{r}
+finalCasesDf %>% summarise(funs(mean))
+```
+
+## Conclusions
+
