@@ -16,9 +16,13 @@ https://childmortality.org/data
 
 https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_53934801_1
 
-This dataset includes child-under-5 mortality rates for all countries from 1950 to 2015. The data is structured in wide format, where the column names include the country, and each year from 1950 to 2015. Values are the corresponding child mortality rates for that country, and that year. Restructuring this dataset into long format should be very easy to accomplish with the tidyr::gather().\
+For this analysis I used Alec Mcabe's suggested data set[^1]. Alec linked to a website article by Simon Ejdemyr about wide and long data sets[^2] using some sample data from the Unicef Child Mortality website[^3].
 
-This dataset would be a great starting point for analyzing mortality rates for children under 5 over time, by country. It would also be interesting to see if any country mortality rates are correlated over time. Monitoring spikes for mortality rate over time would be a good way to identify patterns or factors leading to child mortality.
+I decided to go directly to the Unicef website[^3] and pull my own data from it for analysis and tidying. 
+
+The data I grab was the mortality rates, defined as deaths out of 1000 births, for all countries that had data. The data was offered in different age ranges so I decided to get the mortality rate groupings from 1-59 months, 5-9 years, 10-14 years, 15-19 years, and 20-24 years. This resulted in a rather large, long data set due to the fact that there was data going back to the 1960s, each row in the data set represented one value, for one indicator (e.g. 1-59 months), for one country for one year.
+
+As I tidied the data for analysis I became curious if I could compare how the moratility rate changes over time for the countries with the lowest and highest mortality rates. For example I was curious if countries with high mortality rates at young ages, continue to have high mortality rates and people get older. Similarily for countries with low mortality rates.
 
 ## Setup
 
@@ -29,6 +33,7 @@ library(dplyr)
 library(tidyr)
 library(kableExtra)
 library(readr)
+library(forcats)
 library(ggplot2)
 ```
 
@@ -74,26 +79,29 @@ kable(unicefDf,caption = "Mortality rates (deaths / 1000 births) by Country for 
 
 ```{r}
 highestMortalityRate <- unicefDf %>% 
+  select(Country, `Mortality rate 1-59 months`, `Mortality rate age 5-9`, `Mortality rate age 10-14`, `Mortality rate age 15-19`, `Mortality rate age 20-24`) %>% 
   arrange(desc(`Mortality rate 1-59 months`)) %>%
   ungroup() %>%
   top_n(10, `Mortality rate 1-59 months`)
 
-kable(highestMortalityRate,caption = "Mortality rates (deaths / 1000 births) by Country for year of 2029", format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
+kable(highestMortalityRate,caption = "Mortality rates (deaths / 1000 births) by Country for year of 2019", format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%", height="100%")
 
 
 ```
 
 ```{r}
-highestMortalityRate %>% 
+highestMortalityRate  %>%
   pivot_longer(-Country)%>% 
-  ggplot(aes(x = name, y = value, col = `Country`)) +
+  ggplot(aes(x = fct_inorder(name), y = value, col = `Country`)) +
   geom_point() +
-  geom_line()
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 
 ```{r}
 lowestMortalityRate <- unicefDf %>% 
+  select(Country, `Mortality rate 1-59 months`, `Mortality rate age 5-9`, `Mortality rate age 10-14`, `Mortality rate age 15-19`, `Mortality rate age 20-24`) %>% 
   arrange((`Mortality rate 1-59 months`)) %>%
   ungroup() %>%
   head(10, `Mortality rate 1-59 months`)
@@ -106,7 +114,25 @@ kable(lowestMortalityRate,caption = "Mortality rates (deaths / 1000 births) by C
 ```{r}
 lowestMortalityRate %>% 
   pivot_longer(-Country)%>% 
-  ggplot(aes(x = name, y = value, col = `Country`)) +
+  ggplot(aes(x = fct_inorder(name), y = value, col = `Country`)) +
   geom_point() +
-  geom_line()
+  geom_line() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
+
+## Conclusion
+
+It appears that there is somewhat of a trend when it comes to mortality rates in high vs. low mortality rate countries. Looking at my plots for the high mortality rate countries it appears that there is a dramatic difference in mortality rate after the first 59 months of life. While the mortality rates do seem to creep upwards as people get older they it would appear your chances of surviving if you survive past your first 59 months are much higher in high mortality rate countries.
+
+The trend is similar in the low mortality rate countries but the drop off in mortality rate is not nearly as dramatic after 59 months. The other interesting thing I noticed about the low mortality rate countries is that in the older age groups, 15-19 and 20-24, the mortality rate starts spreading out between countries. 
+
+
+## References
+
+### Dataset
+
+[^1]: https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2010109_1&nav=discussion_board_entry&conf_id=_2342994_1&forum_id=_2992508_1&message_id=_53934801_1
+ 
+[^2]: Wide &amp; long data - GitHub Pages. (n.d.). Retrieved October 4, 2021, from https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/. 
+
+[^3]: CME Info - child mortality estimates. (n.d.). Retrieved October 4, 2021, from https://childmortality.org/data.

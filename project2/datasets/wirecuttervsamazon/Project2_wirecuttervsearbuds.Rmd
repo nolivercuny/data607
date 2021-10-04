@@ -129,5 +129,8 @@ Given that there are two data sets I need to combine them to do analysis. This p
 joinedDf <- left_join(wirecutterDf, customerReviewsDf, by = c("Amazon Name"  = "Name"))
 ```
 
+## Analysis
+
+## References
 
 
