@@ -156,9 +156,8 @@ a.sourceLine {
 <h2>Setup</h2>
 <div id="load-libraries" class="section level3">
 <h3>Load Libraries</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RCurl)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
 <pre><code>## 
 ## Attaching package: &#39;dplyr&#39;</code></pre>
 <pre><code>## The following objects are masked from &#39;package:stats&#39;:
@@ -167,45 +166,44 @@ a.sourceLine {
 <pre><code>## The following objects are masked from &#39;package:base&#39;:
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code></pre></div>
-<pre><code>## 
-## Attaching package: &#39;tidyr&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:RCurl&#39;:
-## 
-##     complete</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code></pre></div>
 <pre><code>## 
 ## Attaching package: &#39;kableExtra&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:dplyr&#39;:
 ## 
 ##     group_rows</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
 </div>
 <div id="load-data" class="section level3">
 <h3>Load Data</h3>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>unicefUrl <span class="ot">&lt;-</span> <span class="st">&#39;https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/childmortality/all_countries_dr_u5_5_9_10_14_15_24.csv&#39;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>unicefRaw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(unicefUrl)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>unicefUrl <span class="ot">&lt;-</span> <span class="st">&#39;https://raw.githubusercontent.com/nolivercuny/data607/master/project2/datasets/childmortality/all_countries_dr_u5_5_9_10_14_15_24.csv&#39;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>unicefRaw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(unicefUrl)</span></code></pre></div>
 </div>
 </div>
 <div id="tidy" class="section level2">
 <h2>Tidy</h2>
-<p>Grab only the relevant columns Rename them so they are easier to work with Mutate year so it’s a number and drop extra data from it Get the last year of data for each observation to make it easier to analyze. I do this with <code>group_by</code> and <code>slice_max</code> on Year. Interestingly this reveals that many indicators do not have data separated by genders. Because of this I also decided to filter out the gender specific observations and just keep the totals. After which point the sex column adds no additional information so it can be dropped.</p>
-<p>I also needed to account for the fact that in some cases there were multiple observations for the same indicator and same year.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>beforeColon <span class="ot">&lt;-</span> <span class="st">&quot;^(.*?): &quot;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>unicefDf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(unicefRaw) <span class="sc">%&gt;%</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">&quot;REF_AREA.Geographic.area&quot;</span>,<span class="st">&quot;INDICATOR.Indicator&quot;</span>,<span class="st">&quot;SEX.Sex&quot;</span>,<span class="st">&quot;TIME_PERIOD.Time.period&quot;</span>,<span class="st">&quot;OBS_VALUE.Observation.Value&quot;</span> )) <span class="sc">%&gt;%</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Country =</span> <span class="st">&quot;REF_AREA.Geographic.area&quot;</span>, <span class="at">Indicator =</span> <span class="st">&quot;INDICATOR.Indicator&quot;</span>, <span class="at">Sex =</span> <span class="st">&quot;SEX.Sex&quot;</span>, <span class="at">Year =</span> <span class="st">&quot;TIME_PERIOD.Time.period&quot;</span>, <span class="at">Value =</span> <span class="st">&quot;OBS_VALUE.Observation.Value&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">mutate</span>(<span class="at">Year =</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">&quot;-.*&quot;</span>, <span class="st">&quot;&quot;</span>, Year)), <span class="at">Sex =</span> <span class="fu">gsub</span>(beforeColon, <span class="st">&quot;&quot;</span>, Sex),<span class="at">Country =</span> <span class="fu">gsub</span>(beforeColon, <span class="st">&quot;&quot;</span>, Country),<span class="at">Indicator =</span> <span class="fu">gsub</span>(beforeColon, <span class="st">&quot;&quot;</span>, Indicator)) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">filter</span>(Sex <span class="sc">==</span> <span class="st">&quot;Total&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>   <span class="fu">slice_max</span>(Year) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>   <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Indicator, <span class="at">values_from =</span> Value, <span class="at">values_fn =</span> mean) <span class="sc">%&gt;%</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="sc">-</span>Sex, <span class="sc">-</span>Year)</span></code></pre></div>
+<p>Grab only the relevant columns (Country, Sex, Year, Indicator, Value)</p>
+<p>Rename them so they are easier to work with</p>
+<p>Mutate “Year” so it’s a number and drop extra data from it</p>
+<p>Get the last year of data for each observation to make it easier to analyze. I do this with <code>group_by</code> and <code>slice_max</code> on Year. Interestingly this reveals that many indicators do not have data separated by genders. Because of this I also decided to filter out the gender specific observations and just keep the totals.</p>
+<p>The last step was to then make the data wider instead of longer so I could see how the mortality rate changed over time by country. I used the <code>pivot_wider</code> function to accomplish this. Unfortunately I discovered that some countries had multiple datasoruces for the Indicator per in a single year. I solved this by using the <code>value_fn</code> parameter and setting that to the mean. There are probably more nuanced ways of handling this but for my purposes this worked well enough in getting me a single value for the observation.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>beforeColon <span class="ot">&lt;-</span> <span class="st">&quot;^(.*?): &quot;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>unicefDf <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(unicefRaw) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">&quot;REF_AREA.Geographic.area&quot;</span>,<span class="st">&quot;INDICATOR.Indicator&quot;</span>,<span class="st">&quot;SEX.Sex&quot;</span>,<span class="st">&quot;TIME_PERIOD.Time.period&quot;</span>,<span class="st">&quot;OBS_VALUE.Observation.Value&quot;</span> )) <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Country =</span> <span class="st">&quot;REF_AREA.Geographic.area&quot;</span>, <span class="at">Indicator =</span> <span class="st">&quot;INDICATOR.Indicator&quot;</span>, <span class="at">Sex =</span> <span class="st">&quot;SEX.Sex&quot;</span>, <span class="at">Year =</span> <span class="st">&quot;TIME_PERIOD.Time.period&quot;</span>, <span class="at">Value =</span> <span class="st">&quot;OBS_VALUE.Observation.Value&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">mutate</span>(<span class="at">Year =</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">&quot;-.*&quot;</span>, <span class="st">&quot;&quot;</span>, Year)), <span class="at">Sex =</span> <span class="fu">gsub</span>(beforeColon, <span class="st">&quot;&quot;</span>, Sex),<span class="at">Country =</span> <span class="fu">gsub</span>(beforeColon, <span class="st">&quot;&quot;</span>, Country),<span class="at">Indicator =</span> <span class="fu">gsub</span>(beforeColon, <span class="st">&quot;&quot;</span>, Indicator)) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">filter</span>(Sex <span class="sc">==</span> <span class="st">&quot;Total&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">group_by</span>(Country) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>   <span class="fu">slice_max</span>(Year) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>   <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Indicator, <span class="at">values_from =</span> Value, <span class="at">values_fn =</span> mean) <span class="sc">%&gt;%</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(<span class="sc">-</span>Sex, <span class="sc">-</span>Year)</span></code></pre></div>
 </div>
 <div id="analysis" class="section level2">
 <h2>Analysis</h2>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(unicefDf,<span class="at">caption =</span> <span class="st">&quot;Mortality rates (deaths / 1000 births) by Country for year of 2029&quot;</span>, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(unicefDf,<span class="at">caption =</span> <span class="st">&quot;Mortality rates (deaths / 1000 births) by Country for year of 2029&quot;</span>, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
 <caption>
@@ -4152,6 +4150,243 @@ Zimbabwe
 </td>
 <td style="text-align:right;">
 5.1928487
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>highestMortalityRate <span class="ot">&lt;-</span> unicefDf <span class="sc">%&gt;%</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Mortality rate 1-59 months</span><span class="st">`</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">top_n</span>(<span class="dv">10</span>, <span class="st">`</span><span class="at">Mortality rate 1-59 months</span><span class="st">`</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(highestMortalityRate,<span class="at">caption =</span> <span class="st">&quot;Mortality rates (deaths / 1000 births) by Country for year of 2029&quot;</span>, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">kable_styling</span>(<span class="st">&quot;striped&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<caption>
+Mortality rates (deaths / 1000 births) by Country for year of 2029
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Country
+</th>
+<th style="text-align:right;">
+Mortality rate 1-59 months
+</th>
+<th style="text-align:right;">
+Mortality rate age 10-14
+</th>
+<th style="text-align:right;">
+Mortality rate age 15-19
+</th>
+<th style="text-align:right;">
+Mortality rate age 20-24
+</th>
+<th style="text-align:right;">
+Mortality rate age 5-9
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Nigeria
+</td>
+<td style="text-align:right;">
+84.37636
+</td>
+<td style="text-align:right;">
+7.933612
+</td>
+<td style="text-align:right;">
+8.531683
+</td>
+<td style="text-align:right;">
+10.506583
+</td>
+<td style="text-align:right;">
+13.441221
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Chad
+</td>
+<td style="text-align:right;">
+83.30102
+</td>
+<td style="text-align:right;">
+10.641506
+</td>
+<td style="text-align:right;">
+15.525497
+</td>
+<td style="text-align:right;">
+19.564061
+</td>
+<td style="text-align:right;">
+15.207849
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Somalia
+</td>
+<td style="text-align:right;">
+83.17578
+</td>
+<td style="text-align:right;">
+8.697666
+</td>
+<td style="text-align:right;">
+17.227091
+</td>
+<td style="text-align:right;">
+25.858580
+</td>
+<td style="text-align:right;">
+16.814238
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sierra Leone
+</td>
+<td style="text-align:right;">
+80.56979
+</td>
+<td style="text-align:right;">
+8.008552
+</td>
+<td style="text-align:right;">
+24.902140
+</td>
+<td style="text-align:right;">
+27.940298
+</td>
+<td style="text-align:right;">
+13.670814
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Central African Republic
+</td>
+<td style="text-align:right;">
+73.22873
+</td>
+<td style="text-align:right;">
+5.153523
+</td>
+<td style="text-align:right;">
+11.288133
+</td>
+<td style="text-align:right;">
+23.648029
+</td>
+<td style="text-align:right;">
+9.051233
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Guinea
+</td>
+<td style="text-align:right;">
+70.57908
+</td>
+<td style="text-align:right;">
+6.229546
+</td>
+<td style="text-align:right;">
+13.290056
+</td>
+<td style="text-align:right;">
+18.447630
+</td>
+<td style="text-align:right;">
+12.626305
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mali
+</td>
+<td style="text-align:right;">
+63.95624
+</td>
+<td style="text-align:right;">
+8.449323
+</td>
+<td style="text-align:right;">
+10.035815
+</td>
+<td style="text-align:right;">
+11.905534
+</td>
+<td style="text-align:right;">
+13.790958
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Burkina Faso
+</td>
+<td style="text-align:right;">
+63.23894
+</td>
+<td style="text-align:right;">
+6.331126
+</td>
+<td style="text-align:right;">
+6.069151
+</td>
+<td style="text-align:right;">
+9.976072
+</td>
+<td style="text-align:right;">
+11.130952
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Benin
+</td>
+<td style="text-align:right;">
+61.61026
+</td>
+<td style="text-align:right;">
+7.153629
+</td>
+<td style="text-align:right;">
+11.179638
+</td>
+<td style="text-align:right;">
+11.155139
+</td>
+<td style="text-align:right;">
+12.532683
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+South Sudan
+</td>
+<td style="text-align:right;">
+59.93864
+</td>
+<td style="text-align:right;">
+7.542051
+</td>
+<td style="text-align:right;">
+15.135187
+</td>
+<td style="text-align:right;">
+22.889002
+</td>
+<td style="text-align:right;">
+13.604395
 </td>
 </tr>
 </tbody>

@@ -73,6 +73,40 @@ kable(unicefDf,caption = "Mortality rates (deaths / 1000 births) by Country for 
 ```
 
 ```{r}
-unicefDf %>% ggplot(aes=(Country)) +
-  geom_histogram()
+highestMortalityRate <- unicefDf %>% 
+  arrange(desc(`Mortality rate 1-59 months`)) %>%
+  ungroup() %>%
+  top_n(10, `Mortality rate 1-59 months`)
+
+kable(highestMortalityRate,caption = "Mortality rates (deaths / 1000 births) by Country for year of 2029", format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
+
+
+```
+
+```{r}
+highestMortalityRate %>% 
+  pivot_longer(-Country)%>% 
+  ggplot(aes(x = name, y = value, col = `Country`)) +
+  geom_point() +
+  geom_line()
+```
+
+
+```{r}
+lowestMortalityRate <- unicefDf %>% 
+  arrange((`Mortality rate 1-59 months`)) %>%
+  ungroup() %>%
+  head(10, `Mortality rate 1-59 months`)
+
+kable(lowestMortalityRate,caption = "Mortality rates (deaths / 1000 births) by Country for year of 2029", format = "html") %>% kable_styling("striped") %>% scroll_box(width = "100%")
+
+
+```
+
+```{r}
+lowestMortalityRate %>% 
+  pivot_longer(-Country)%>% 
+  ggplot(aes(x = name, y = value, col = `Country`)) +
+  geom_point() +
+  geom_line()
 ```
