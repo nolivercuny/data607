@@ -11,7 +11,33 @@ editor_options:
 
 # Books 
 
-|title|authors|page count|publication year|current price on amazon
-|Real World Haskell|Bryan O'Sullivan, John Goerzen, Don Stewart|670|2008|$49.99
-|Programming in Haskell|Graham Hutton|171|2007|$18.97
-|Learn You a Haskell for Great Good!: A Beginner's Guide|Miran Lipovača|400|2011|$42.21
+Here is a table with the 3 books I chose and their properties
+
+|title|authors|page count|publication year|current price on amazon|
+|-----|-------|----------|----------------|-----------------------|
+|Real World Haskell|Bryan O'Sullivan, John Goerzen, Don Stewart|670|2008|$49.99|
+|Programming in Haskell|Graham Hutton|171|2007|$18.97|
+|Learn You a Haskell for Great Good!: A Beginner's Guide|Miran Lipovača|400|2011|$42.21|
+
+## JSON
+
+```{r}
+library(jsonlite)
+jsonDf <- fromJSON("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.json")
+```
+
+## XML
+
+```{r}
+library(xml2)
+xmlDf <- read_xml("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.xml")
+```
+
+
+## HTML
+
+```{r}
+htmlDf <- read_html("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.html")
+```
+
+
