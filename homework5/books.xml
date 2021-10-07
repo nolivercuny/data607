@@ -1,4 +1,23 @@
 <books>
   <book>
+    <title>Real World Haskell</title>
+    <authors>Bryan O'Sullivan, John Goerzen, Don Stewart</authors>
+    <page-count>670</page-count>
+    <publication-year>2008</publication-year>
+    <price-on-amazon>$49.99</price-on-amazon>
+  </book> 
+  <book>
+    <title>Programming in Haskell</title>
+    <authors>Graham Hutton</authors>
+    <page-count>171</page-count>
+    <publication-year>2007</publication-year>
+    <price-on-amazon>$18.97</price-on-amazon>
+  </book>
+  <book>
+    <title>Learn You a Haskell for Great Good!: A Beginner's Guide</title>
+    <authors>Miran Lipovača</authors>
+    <page-count>400</page-count>
+    <publication-year>2011</publication-year>
+    <price-on-amazon>$42.21</price-on-amazon>
   </book>
 </books>

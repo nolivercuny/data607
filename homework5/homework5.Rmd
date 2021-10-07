@@ -12,6 +12,6 @@ editor_options:
 # Books 
 
 |title|authors|page count|publication year|current price on amazon
-|Real World Haskell|Bryan O'Sullivan, John Goerzen, Don Stewart| 670|2008|$49.99
-|Programming in Haskell|171|Graham Hutton|2007|$18.97
+|Real World Haskell|Bryan O'Sullivan, John Goerzen, Don Stewart|670|2008|$49.99
+|Programming in Haskell|Graham Hutton|171|2007|$18.97
 |Learn You a Haskell for Great Good!: A Beginner's Guide|Miran Lipovača|400|2011|$42.21
