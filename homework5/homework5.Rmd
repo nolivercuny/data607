@@ -21,23 +21,38 @@ Here is a table with the 3 books I chose and their properties
 
 ## JSON
 
-```{r}
+Use the `jsonlite` libraries `fromJSON` function and simply cast as dataframe
+
+```{r results=FALSE, message=FALSE, warning=FALSE}
 library(jsonlite)
-jsonDf <- fromJSON("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.json")
+jsonDf <- as.data.frame(fromJSON("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.json"))
 ```
 
 ## XML
 
-```{r}
+Use the `read_xml` function of the `xml2` library.
+
+Convert the XML to a list. 
+
+Unnest by the root node of the XML
+
+Now you have a structure that looks like the dataframe you want but the values are lists of lists of the actual value due to the XML structure.
+
+Unnest every column two more times to extract the values from the list of lists
+
+
+
+```{r results=FALSE, message=FALSE, warning=FALSE}
 library(xml2)
 library(tidyverse)
 xmlDoc <- as_list(read_xml("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.xml"))
 
-# put list into a one column tible
+# put list into a one column tibble
 xmlDf<-as_tibble(xmlDoc) %>%
   unnest_wider(books) %>%
   # unnest same length list cols
   unnest(cols = names(.)) %>%
+  # unnest again because each column value is still a list
   unnest(cols = names(.)) %>%
   type_convert()
 ```
@@ -45,11 +60,33 @@ xmlDf<-as_tibble(xmlDoc) %>%
 
 ## HTML
 
-```{r}
+Use the web scraping library`rvest`'s `html_table` function and cast the result as a dataframe
+
+```{r results=FALSE, message=FALSE, warning=FALSE}
 library(rvest)
 htmlDf <- read_html("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.html")
 
 htmlDf <- as.data.frame(html_table(htmlDf))
 ```
 
+## Are the three data frames identical?
 
+First compare all dataframes and they are not equal because the column names are different.
+
+Set all the column names the same and they are still not identical because the values of each column are different types from each other due to the different ways the libraries are parsing the data into dataframes.
+
+```{r}
+
+(all_equal(xmlDf, htmlDf))
+(all_equal(xmlDf, jsonDf))
+(all_equal(jsonDf, htmlDf))
+
+colNames <- c("title","authors","page count","publication year","current price on amazon")
+names(xmlDf) <- colNames
+names(htmlDf) <- colNames
+names(jsonDf) <- colNames
+
+(all_equal(xmlDf, htmlDf))
+(all_equal(xmlDf, jsonDf))
+(all_equal(jsonDf, htmlDf))
+```
