@@ -30,14 +30,26 @@ jsonDf <- fromJSON("https://raw.githubusercontent.com/nolivercuny/data607/master
 
 ```{r}
 library(xml2)
-xmlDf <- read_xml("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.xml")
+library(tidyverse)
+xmlDoc <- as_list(read_xml("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.xml"))
+
+# put list into a one column tible
+xmlDf<-as_tibble(xmlDoc) %>%
+  unnest_wider(books) %>%
+  # unnest same length list cols
+  unnest(cols = names(.)) %>%
+  unnest(cols = names(.)) %>%
+  type_convert()
 ```
 
 
 ## HTML
 
 ```{r}
+library(rvest)
 htmlDf <- read_html("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.html")
+
+rvest::html_table(htm)
 ```
 
 
