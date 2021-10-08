@@ -49,7 +49,7 @@ xmlDf<-as_tibble(xmlDoc) %>%
 library(rvest)
 htmlDf <- read_html("https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.html")
 
-rvest::html_table(htm)
+htmlDf <- as.data.frame(html_table(htmlDf))
 ```
 
 
