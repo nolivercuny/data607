@@ -197,6 +197,9 @@ a.sourceLine {
 <h2>XML</h2>
 <p>Use the <code>read_xml</code> function of the <code>xml2</code> library.</p>
 <p>Convert the XML to a list.</p>
+<p>Unnest by the root node of the XML</p>
+<p>Now you have a structure that looks like the dataframe you want but the values are lists of lists of the actual value due to the XML structure.</p>
+<p>Unnest every column two more times to extract the values from the list of lists</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xml2)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>xmlDoc <span class="ot">&lt;-</span> <span class="fu">as_list</span>(<span class="fu">read_xml</span>(<span class="st">&quot;https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.xml&quot;</span>))</span>
@@ -206,10 +209,13 @@ a.sourceLine {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_wider</span>(books) <span class="sc">%&gt;%</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># unnest same length list cols</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">names</span>(.)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">type_convert</span>()</span></code></pre></div>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># unnest again because each column value is still a list</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">names</span>(.)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">type_convert</span>()</span></code></pre></div>
 </div>
 <div id="html" class="section level2">
 <h2>HTML</h2>
+<p>Use the web scraping library<code>rvest</code>’s <code>html_table</code> function and cast the result as a dataframe</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>htmlDf <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="st">&quot;https://raw.githubusercontent.com/nolivercuny/data607/master/homework5/books.html&quot;</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -217,6 +223,8 @@ a.sourceLine {
 </div>
 <div id="are-the-three-data-frames-identical" class="section level2">
 <h2>Are the three data frames identical?</h2>
+<p>First compare all dataframes and they are not equal because the column names are different.</p>
+<p>Set all the column names the same and they are still not identical because the values of each column are different types from each other due to the different ways the libraries are parsing the data into dataframes.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">all_equal</span>(xmlDf, htmlDf))</span></code></pre></div>
 <pre><code>## [1] &quot;not compatible: \n- Cols in y but not x: `Title`, `Authors`, `Page.Count`, `Publication.Year`, `Price.On.Amazon`.\n- Cols in x but not y: `title`, `authors`, `page-count`, `publication-year`, `price-on-amazon`.\n&quot;</code></pre>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">all_equal</span>(xmlDf, jsonDf))</span></code></pre></div>
@@ -229,9 +237,9 @@ a.sourceLine {
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(jsonDf) <span class="ot">&lt;-</span> colNames</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>(<span class="fu">all_equal</span>(xmlDf, htmlDf))</span></code></pre></div>
-<pre><code>## [1] &quot;- Different types for column `title`: list vs character\n- Different types for column `authors`: list vs character\n- Different types for column `page count`: list vs integer\n- Different types for column `publication year`: list vs integer\n- Different types for column `current price on amazon`: list vs character\n&quot;</code></pre>
+<pre><code>## [1] &quot;- Different types for column `page count`: double vs integer\n- Different types for column `publication year`: double vs integer\n&quot;</code></pre>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">all_equal</span>(xmlDf, jsonDf))</span></code></pre></div>
-<pre><code>## [1] &quot;- Different types for column `title`: list vs character\n- Different types for column `page count`: list vs integer\n- Different types for column `publication year`: list vs integer\n- Different types for column `current price on amazon`: list vs character\n&quot;</code></pre>
+<pre><code>## [1] &quot;- Different types for column `authors`: character vs list\n- Different types for column `page count`: double vs integer\n- Different types for column `publication year`: double vs integer\n&quot;</code></pre>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">all_equal</span>(jsonDf, htmlDf))</span></code></pre></div>
 <pre><code>## [1] &quot;- Different types for column `authors`: list vs character\n&quot;</code></pre>
 </div>
