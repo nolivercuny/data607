@@ -1,0 +1,41 @@
+---
+title: "Week 9 Homework"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+# Week 9 Homework
+
+## Setup
+
+### Load Libraries
+
+
+```{r results=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(RCurl)
+library(kableExtra)
+library(jsonlite)
+```
+
+## Load Raw JSON from NYT
+
+```{r}
+url <- 'https://api.nytimes.com/svc/movies/v2/reviews/search.json?critics-pick=Y&api-key=FIU5RW8zWaF0jp8Y0w76rUlhusYdmagW'
+results <- fromJSON(url)
+```
+
+```{r}
+rawDf <- results[[5]]
+```
+
+```{r}
+rawDf %>% kable()
+```
+
