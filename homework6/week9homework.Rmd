@@ -11,31 +11,48 @@ editor_options:
 
 # Week 9 Homework
 
+In this assignment the goal is to retrieve and load JSON data from the New York Times open data APIs. I chose to use the movie reviews API that they offer to load my data in. The reviews API has a `search.json` route which includes a `critics-pick` query parameter that I used in order to retrieve 20 movie reviews in JSON format.
+
 ## Setup
 
 ### Load Libraries
 
+For this assignment I only needed two libraries. The `kableExtra` library is used for displaying my data for review purposes. The `jsonlite` library does the heavy lifting of retrieving and parsing the data.
 
 ```{r results=FALSE, message=FALSE, warning=FALSE}
-
-library(tidyverse)
-library(RCurl)
 library(kableExtra)
 library(jsonlite)
 ```
 
 ## Load Raw JSON from NYT
 
+I found the full route for the API by using the New York Times documentation website. My API key is embedded in the URL as a query parameter. 
+
+The `jsonlite` library includes a function called `fromJSON` which not only is able to make the HTTP GET request to the NYT API but also parses the results into a list of data.
+
 ```{r}
 url <- 'https://api.nytimes.com/svc/movies/v2/reviews/search.json?critics-pick=Y&api-key=FIU5RW8zWaF0jp8Y0w76rUlhusYdmagW'
 results <- fromJSON(url)
 ```
 
-```{r}
-rawDf <- results[[5]]
-```
+The result of the `fromJSON` request is a 5 item list. 
 
-```{r}
-rawDf %>% kable()
+The first item in the list represents the status of the response I am extracting that value and validating that it equals `"OK"`
+
+The last item in the list is the actual response body already in a dataframe. I simply extract that body as a dataframe and display it in a table.
+
+```{r warning=FALSE}
+status <- results[[1]]
+print(paste("Response Status: ", status))
+if(status != "OK"){
+  print("Request failed!")
+}else{
+ rawDf <- results[[5]]
+ rawDf %>% 
+   kbl() %>%
+     kable_paper(full_width = F) %>%
+    scroll_box(width = "100%", height="600px")
+}
+
 ```
 
