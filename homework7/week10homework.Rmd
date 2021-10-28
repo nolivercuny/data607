@@ -30,6 +30,9 @@ library(tidytext)
 library(janeaustenr)
 library(dplyr)
 library(stringr)
+library(wordcloud)
+library(reshape2)
+library(ggplot2)
 ```
 
 ## Example Code
@@ -82,7 +85,7 @@ This section is about comparing how the different sentiment datasets map to the 
 pride_prejudice <- tidy_books %>% 
   filter(book == "Pride & Prejudice")
 
-#pride_prejudice
+#pride_prejudice - I have intentionally excluded this to keep the assignment cleaner
 
 afinn <- pride_prejudice %>% 
   inner_join(get_sentiments("afinn")) %>% 
@@ -113,6 +116,89 @@ bind_rows(afinn,
   facet_wrap(~method, ncol = 1, scales = "free_y")
 ```
 
+
+Here the author's compare continue their analysis by counting which positive and negative words contributed the most to the sentiment scores
+```{r}
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+# bing_word_counts - I have intentionally modified this from its original source
+
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+```
+
+As a follow up to the previous section the author's demonstrate adding custom "stop words" that are specific to the given analysis. Pointing out that `miss` was the one of the most common negative sentitment words but in the context of a Jane Austen novel, `miss` is used frequently as a way of identifying a female character.
+```{r}
+custom_stop_words <- bind_rows(tibble(word = c("miss"),  
+                                      lexicon = c("custom")), 
+                               stop_words)
+
+custom_stop_words
+```
+
+Here the author's demonstrate a word cloud as another way of visualizing the data
+```{r}
+tidy_books %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+```
+
+The final section discusses using whole sentences to perform the sentiment analysis over individual words
+
+```{r}
+#demonstrate how to tokenize by sentence
+p_and_p_sentences <- tibble(text = prideprejudice) %>% 
+  unnest_tokens(sentence, text, token = "sentences")
+p_and_p_sentences$sentence[2]
+
+# counting the chapters of each book
+austen_chapters <- austen_books() %>%
+  group_by(book) %>%
+  unnest_tokens(chapter, text, token = "regex", 
+                pattern = "Chapter|CHAPTER [\\dIVXLC]") %>%
+  ungroup()
+
+austen_chapters %>% 
+  group_by(book) %>% 
+  summarise(chapters = n())
+
+# Find which chapters are the most negative in each book
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+wordcounts <- tidy_books %>%
+  group_by(book, chapter) %>%
+  summarize(words = n())
+
+tidy_books %>%
+  semi_join(bingnegative) %>%
+  group_by(book, chapter) %>%
+  summarize(negativewords = n()) %>%
+  left_join(wordcounts, by = c("book", "chapter")) %>%
+  mutate(ratio = negativewords/words) %>%
+  filter(chapter != 0) %>%
+  slice_max(ratio, n = 1) %>% 
+  ungroup()
+```
 
 
 ## Assignment Solution
