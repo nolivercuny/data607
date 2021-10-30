@@ -59,12 +59,37 @@ reviewsTokenized <- reviews %>%
 
 ```{r}
 reviewsTokenized %>%
+  anti_join(stop_words) %>%
   inner_join(get_sentiments("bing")) %>%
   count(word, sentiment, sort = TRUE) %>%
   acast(word ~ sentiment, value.var = "n", fill = 0) %>%
-  comparison.cloud(colors = c("gray20", "gray80"),
+  comparison.cloud(colors = c("red", "green"),
                    max.words = 100)
 ```
+
+```{r}
+
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+bingpositive <- get_sentiments("bing") %>%
+  filter(sentiment == "positive")
+
+reviewsTokenized %>%
+  anti_join(stop_words) %>%
+  semi_join(bingnegative) %>%
+  group_by(Rating) %>%
+  summarize(negativewords = n()) %>%
+  ungroup()
+
+reviewsTokenized %>%
+  anti_join(stop_words) %>%
+  semi_join(bingpositive) %>%
+  group_by(Rating) %>%
+  summarize(positivewords = n()) %>%
+  ungroup()
+```
+
 
 
 ## Example Code
