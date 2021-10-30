@@ -40,6 +40,31 @@ library(tidyr)
 
 The corpus I chose to work with is the Trip Advisor Reviews Data obtained from Kaggle[^3]. 
 
+The data consists of the text from Trip Advisor reviews and the associated numerical rating that the user gave. I am going to attempt to compare the sentiment of the words in the reviews with the ratings of the user to see if they match.
+
+
+First load the data
+```{r}
+dataUrl <- 'https://raw.githubusercontent.com/nolivercuny/data607/master/homework7/tripadvisor_hotel_reviews.csv'
+reviews <- read.csv(dataUrl)
+glimpse(reviews)
+```
+
+Next tokenize the reviews
+```{r}
+reviewsTokenized <- reviews %>%
+  mutate(row = row_number()) %>%
+  unnest_tokens(word, Review)
+```
+
+```{r}
+reviewsTokenized %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+```
 
 
 ## Example Code
