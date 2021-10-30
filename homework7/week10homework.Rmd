@@ -75,19 +75,39 @@ bingnegative <- get_sentiments("bing") %>%
 bingpositive <- get_sentiments("bing") %>%
   filter(sentiment == "positive")
 
-reviewsTokenized %>%
+negativeReviews <- reviewsTokenized %>%
   anti_join(stop_words) %>%
   semi_join(bingnegative) %>%
   group_by(Rating) %>%
   summarize(negativewords = n()) %>%
   ungroup()
 
-reviewsTokenized %>%
+positiveReviews <- reviewsTokenized %>%
   anti_join(stop_words) %>%
   semi_join(bingpositive) %>%
   group_by(Rating) %>%
   summarize(positivewords = n()) %>%
   ungroup()
+
+reviewWordCounts <- reviewsTokenized %>%
+  anti_join(stop_words) %>%
+  group_by(Rating) %>%
+  summarize(words = n())
+
+joinedReviews <- negativeReviews %>% 
+  inner_join(positiveReviews) %>% 
+  inner_join(reviewWordCounts)
+
+joinedReviews %>% 
+  ggplot(aes(fill=condition, y=value, x=specie)) + 
+    geom_bar(position="dodge", stat="identity")
+```
+
+```{r}
+specie <- c(rep("sorgho" , 3) , rep("poacee" , 3) , rep("banana" , 3) , rep("triticum" , 3) )
+condition <- rep(c("normal" , "stress" , "Nitrogen") , 4)
+value <- abs(rnorm(12 , 0 , 15))
+data <- data.frame(specie,condition,value)
 ```
 
 
