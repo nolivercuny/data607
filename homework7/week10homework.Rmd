@@ -89,27 +89,25 @@ positiveReviews <- reviewsTokenized %>%
   summarize(positivewords = n()) %>%
   ungroup()
 
-reviewWordCounts <- reviewsTokenized %>%
-  anti_join(stop_words) %>%
-  group_by(Rating) %>%
-  summarize(words = n())
+reviewsJoined <- negativeReviews %>% 
+  inner_join(positiveReviews)
 
-joinedReviews <- negativeReviews %>% 
-  inner_join(positiveReviews) %>% 
-  inner_join(reviewWordCounts)
-
-joinedReviews %>% 
-  ggplot(aes(fill=condition, y=value, x=specie)) + 
+reviewsJoined %>% 
+pivot_longer(!Rating)    %>% 
+  ggplot(aes(fill=name, y=value, x=Rating)) + 
     geom_bar(position="dodge", stat="identity")
 ```
 
 ```{r}
-specie <- c(rep("sorgho" , 3) , rep("poacee" , 3) , rep("banana" , 3) , rep("triticum" , 3) )
-condition <- rep(c("normal" , "stress" , "Nitrogen") , 4)
-value <- abs(rnorm(12 , 0 , 15))
-data <- data.frame(specie,condition,value)
-```
+reviewsCounts <- reviewsTokenized %>%
+    anti_join(stop_words) %>%
+    group_by(row, Rating) %>% 
+    tally(sort=TRUE)
 
+reviewsCounts %>%
+  ggplot(aes(y=n, x=factor(Rating), fill=Rating)) +
+  geom_boxplot()
+```
 
 
 ## Example Code
