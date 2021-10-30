@@ -34,6 +34,8 @@ library(wordcloud)
 library(reshape2)
 library(ggplot2)
 library(tidyr)
+library(sentimentr)
+library(magrittr)
 ```
 
 ## Assignment Solution
@@ -53,10 +55,12 @@ glimpse(reviews)
 Next tokenize the reviews
 ```{r}
 reviewsTokenized <- reviews %>%
+  filter(nchar(Review) < 100) %>%
   mutate(row = row_number()) %>%
   unnest_tokens(word, Review)
 ```
 
+Categorize and display the words from the reviews in a positive/negative word cloud using the `bing` lexicon. 
 ```{r}
 reviewsTokenized %>%
   anti_join(stop_words) %>%
@@ -66,6 +70,8 @@ reviewsTokenized %>%
   comparison.cloud(colors = c("red", "green"),
                    max.words = 100)
 ```
+
+I decided to count the number of positive and negative words in each rating bracket. My assumptions was that it would should more negative than positive sentiment words in the lower rating categories and would gradually flip as the ratings went up. 
 
 ```{r}
 
@@ -89,15 +95,26 @@ positiveReviews <- reviewsTokenized %>%
   summarize(positivewords = n()) %>%
   ungroup()
 
+reviewsWordCount <- reviewsTokenized %>%
+  anti_join(stop_words) %>%
+  group_by(Rating) %>%
+  summarize(count = n()) %>%
+  ungroup()
+
 reviewsJoined <- negativeReviews %>% 
-  inner_join(positiveReviews)
+  inner_join(positiveReviews) %>%
+  inner_join(reviewsWordCount) %>% 
+  mutate(positivepercent = positivewords / count) %>%
+  mutate(negativepercent = negativewords / count)
 
 reviewsJoined %>% 
+  select(Rating, positivepercent, negativepercent) %>%
 pivot_longer(!Rating)    %>% 
   ggplot(aes(fill=name, y=value, x=Rating)) + 
     geom_bar(position="dodge", stat="identity")
 ```
 
+I was interested in the visualizing how the length of the reviews correlates with the rating. 
 ```{r}
 reviewsCounts <- reviewsTokenized %>%
     anti_join(stop_words) %>%
@@ -109,6 +126,31 @@ reviewsCounts %>%
   geom_boxplot()
 ```
 
+
+```{r}
+reviewsSentAgg <- reviews %>%
+  filter(nchar(Review) < 100) %>%
+    get_sentences() %$%
+    sentiment_by(Review, list(Rating))
+reviewsSentAgg
+plot(reviewsSentAgg)
+```
+
+
+```{r}
+reviews %>%
+    mutate(row = row_number()) %>%
+    filter(row %in% sample(unique(row), 5)) %>%
+    mutate(review_sentence = get_sentences(Review)) %$%
+    sentiment_by(review_sentence, row) %>%
+    highlight(open=FALSE, file="file.html")
+```
+
+````{=html}
+```{r, echo=FALSE, results='asis'}
+xfun::file_string('file.html')
+```
+````
 
 ## Example Code
 
