@@ -1,5 +1,5 @@
 ---
-title: "Week 9 Homework"
+title: "Week 10 Homework"
 author: "Nick Oliver"
 output:
   prettydoc::html_pretty:
@@ -52,6 +52,20 @@ reviews <- read.csv(dataUrl)
 glimpse(reviews)
 ```
 
+I plotted out the data and noticed that there is a large amount of extreme outliers. In order to pair down the data set I will only be analyzing reviews that contain fewer than 100 words.
+```{r}
+reviewsCounts <- reviews %>%
+    mutate(row = row_number()) %>%
+    unnest_tokens(word, Review) %>%
+    anti_join(stop_words) %>%
+    group_by(row, Rating) %>% 
+    tally(sort=TRUE)
+
+reviewsCounts %>%
+  ggplot(aes(y=n, x=factor(Rating), fill=Rating)) +
+  geom_boxplot()
+```
+
 Next tokenize the reviews
 ```{r}
 reviewsTokenized <- reviews %>%
@@ -71,7 +85,7 @@ reviewsTokenized %>%
                    max.words = 100)
 ```
 
-I decided to count the number of positive and negative words in each rating bracket. My assumptions was that it would should more negative than positive sentiment words in the lower rating categories and would gradually flip as the ratings went up. 
+I decided to count the number of positive and negative words in each rating bracket. My assumptions was that it would should more negative than positive sentiment words in the lower rating categories and would gradually flip as the ratings went up. The bar plot validates my assumption but surprisingly it does show that positive ratings are overwhelmingly full of positive sentiment over negative sentiment where lower rating reviews are much closer. 
 
 ```{r}
 
@@ -114,18 +128,12 @@ pivot_longer(!Rating)    %>%
     geom_bar(position="dodge", stat="identity")
 ```
 
-I was interested in the visualizing how the length of the reviews correlates with the rating. 
-```{r}
-reviewsCounts <- reviewsTokenized %>%
-    anti_join(stop_words) %>%
-    group_by(row, Rating) %>% 
-    tally(sort=TRUE)
 
-reviewsCounts %>%
-  ggplot(aes(y=n, x=factor(Rating), fill=Rating)) +
-  geom_boxplot()
-```
+For my secondary lexicon I decided to use the `sentimentr` library. The author of the library implemented a unique algorithm that accounts for "valence shifters" in the analysis. Valence shifters are things like negators which accounts for not falsley labeling a sentence like "I was **not** happy with the service" as positive because the word "happy" appears in it. The library also performs the analysis on sentences over words which I used in my above analysis. 
 
+Here I use the `get_sentences()` function of the library to tokenize the reviews into sentences. I then use the `sentiment_by` function to get sentiment per rating. I then plot the sentiment per rating using the built-in `plot` function of the sentimentr library.
+
+Overall you can see that this package produces similar results to my analysis with the `bing` lexicon, but with slightly less significant results especially when it comes to the 2-star rating. It also seems to show a more positive sentiment in 4-star reviews over 5-star reviews which my analysis with `bing` does not show.
 
 ```{r}
 reviewsSentAgg <- reviews %>%
@@ -136,7 +144,7 @@ reviewsSentAgg
 plot(reviewsSentAgg)
 ```
 
-
+Finally, the `sentimentr` library offers a feature where you visually see which parts of the text were labeled as positive over negative.
 ```{r}
 reviews %>%
     mutate(row = row_number()) %>%
