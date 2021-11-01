@@ -52,7 +52,9 @@ reviews <- read.csv(dataUrl)
 glimpse(reviews)
 ```
 
-I plotted out the data and noticed that there is a large amount of extreme outliers. In order to pair down the data set I will only be analyzing reviews that contain fewer than 100 words.
+Below is a box plot showing the summary statistics for the length of the different rating reviews. 
+
+I noticed that there are a large amount of extreme outliers. In order to pair down the data set I will only be analyzing reviews that contain fewer than 500 words.
 ```{r}
 reviewsCounts <- reviews %>%
     mutate(row = row_number()) %>%
@@ -66,10 +68,10 @@ reviewsCounts %>%
   geom_boxplot()
 ```
 
-Next tokenize the reviews
+Filter the reviews down to remove extreme outliers. Tokenize the reviews into a wide dataset where each row is a single word from the review and its rating.
 ```{r}
 reviewsTokenized <- reviews %>%
-  filter(nchar(Review) < 100) %>%
+  filter(nchar(Review) < 500) %>%
   mutate(row = row_number()) %>%
   unnest_tokens(word, Review)
 ```
@@ -85,42 +87,49 @@ reviewsTokenized %>%
                    max.words = 100)
 ```
 
-I decided to count the number of positive and negative words in each rating bracket. My assumptions was that it would should more negative than positive sentiment words in the lower rating categories and would gradually flip as the ratings went up. The bar plot validates my assumption but surprisingly it does show that positive ratings are overwhelmingly full of positive sentiment over negative sentiment where lower rating reviews are much closer. 
+I decided to count the number of positive and negative words in each rating bracket. My assumptions is that lower rating reviews would show more negative sentiment words than positive sentiment words. As the ratings got higher I assumed the sentiment would flip with more positive sentiment words than negative.
+
+Here I break the dataset down generate sentiment counts for both negative and positive grouped by rating. Then generate overall word counts for each rating/
+
+Finally I plot it in a bar chart by rating with the negative and positive sentiment mean count side-by-side.
+
+As you can see my assumption was validated by this analysis.
 
 ```{r}
-
+#get negative sentiment words from bing
 bingnegative <- get_sentiments("bing") %>% 
   filter(sentiment == "negative")
-
+#get positive sentiment words from bing
 bingpositive <- get_sentiments("bing") %>%
   filter(sentiment == "positive")
-
+#count all negative words across every review grouped by rating
 negativeReviews <- reviewsTokenized %>%
   anti_join(stop_words) %>%
   semi_join(bingnegative) %>%
   group_by(Rating) %>%
   summarize(negativewords = n()) %>%
   ungroup()
-
+#count all positive words across every review grouped by rating
 positiveReviews <- reviewsTokenized %>%
   anti_join(stop_words) %>%
   semi_join(bingpositive) %>%
   group_by(Rating) %>%
   summarize(positivewords = n()) %>%
   ungroup()
-
+#count all words across every review grouped by rating
 reviewsWordCount <- reviewsTokenized %>%
   anti_join(stop_words) %>%
   group_by(Rating) %>%
   summarize(count = n()) %>%
   ungroup()
-
+#join all three dataframes together
+#compute the mean negative and positive words per rating
 reviewsJoined <- negativeReviews %>% 
   inner_join(positiveReviews) %>%
   inner_join(reviewsWordCount) %>% 
   mutate(positivepercent = positivewords / count) %>%
   mutate(negativepercent = negativewords / count)
-
+#plot the data
 reviewsJoined %>% 
   select(Rating, positivepercent, negativepercent) %>%
 pivot_longer(!Rating)    %>% 
@@ -129,15 +138,15 @@ pivot_longer(!Rating)    %>%
 ```
 
 
-For my secondary lexicon I decided to use the `sentimentr` library. The author of the library implemented a unique algorithm that accounts for "valence shifters" in the analysis. Valence shifters are things like negators which accounts for not falsley labeling a sentence like "I was **not** happy with the service" as positive because the word "happy" appears in it. The library also performs the analysis on sentences over words which I used in my above analysis. 
+For my secondary lexicon I decided to use the `sentimentr` library. The author of the library implemented a unique algorithm that accounts for "valence shifters" in the analysis. Valence shifters are things like negators which prevent labeling a sentence like "I was **not** happy with the service" as positive because the word "happy" appears in it. The library also performs the analysis on sentences over words which I used in my above analysis. 
 
 Here I use the `get_sentences()` function of the library to tokenize the reviews into sentences. I then use the `sentiment_by` function to get sentiment per rating. I then plot the sentiment per rating using the built-in `plot` function of the sentimentr library.
 
-Overall you can see that this package produces similar results to my analysis with the `bing` lexicon, but with slightly less significant results especially when it comes to the 2-star rating. It also seems to show a more positive sentiment in 4-star reviews over 5-star reviews which my analysis with `bing` does not show.
+This library produces very different results over my analysis with the `bing` lexicon. The only rating that shows majority negative sentiment is the 1 star rating. Every other rating is positive.
 
 ```{r}
 reviewsSentAgg <- reviews %>%
-  filter(nchar(Review) < 100) %>%
+  filter(nchar(Review) < 500) %>%
     get_sentences() %$%
     sentiment_by(Review, list(Rating))
 reviewsSentAgg
