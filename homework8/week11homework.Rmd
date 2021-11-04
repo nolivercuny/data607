@@ -1,5 +1,5 @@
 ---
-title: "Week 11 Homework"
+title: "Discussion - Recommender Systems"
 author: "Nick Oliver"
 output:
   prettydoc::html_pretty:
@@ -9,7 +9,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Week 11 Homework
+# Discussion - Recommender Systems
 
 ## Overview
 
@@ -23,3 +23,64 @@ Here are two examples of the kinds of papers that might be helpful backgrounders
 
 IEEE Internet Computing, Greg Linden, Brent Smith, and Jeremy York (2003): Amazon.com Recommendations:  Item-to-Item Collaborative Filtering.
 Alex Spangher (2015): Building the Next New York Times Recommendation Engine. 
+
+## Spotify's Recommender System
+
+Spotify is one of the most popular music streaming services according to Statista[^1]. Its popularity as a streaming service and one of its core functionalities, that is recommending new songs and artists to its users, has sparked immense interest in its recommendation system. 
+
+There is a plethora of articles attempting to dissect how Spotify's recommender system works.
+
+Below is a short list of articles I was able to find:
+
+- [How Spotify Recommends Your New Favorite Artist](https://towardsdatascience.com/how-spotify-recommends-your-new-favorite-artist-8c1850512af0)
+- [How Spotify recommender system works](https://www.linkedin.com/pulse/how-spotify-recommender-system-works-daniel-roy-cfa/)
+- [Recommending music on Spotify with deep learning](https://benanne.github.io/2014/08/05/spotify-cnns.html)
+- [Music To My Ears: De-Blackboxing Spotify’s Recommendation Engine](https://blogs.commons.georgetown.edu/cctp-607-spring2019/2019/05/06/music-to-my-ears-de-blackboxing-spotifys-recommendation-algorithm/)
+- [How does Spotify's recommendation system work?](https://www.univ.ai/post/spotify-recommendations)
+
+In addition there are a number of articles discussing how to build your own recommender system from your own Spotify listening history such as, [Machine learning and recommender systems using your own Spotify data](https://towardsdatascience.com/machine-learning-and-recommender-systems-using-your-own-spotify-data-4918d80632e3) and [Spotify Recommendation System with Machine Learning](https://thecleverprogrammer.com/2021/03/03/spotify-recommendation-system-with-machine-learning/)
+
+Based on the abundance of interest in Spotify's recommender system, it is clear that it is an important part of Spotify as a product and an important part of Spotify's business model.
+
+## Scenario Design: Spotify as a Business
+
+1. Who are your target users?
+
+Anyone who listens to music
+
+2. What are their key goals?
+
+To listen to the music they already enjoy, but also to discover new music and artists that they have not heard of that they enjoy listening to as well.
+
+3. How can you help them accomplish those goals?
+
+Recommend the listener new artists, albums, playlists, and songs that they have or may have not heard before that appeal to their tastes in music.
+
+## Reverse Engineering Spotify's Recommender System
+
+The article, How Spotify Recommends Your New Favorite Artist[^2], by Clark Boyd, suggests that Spotify is using a combination of three novel techniques in order to generate their recommendations. The author speculates that Spotify is using a combination of "Collaborative Filtering", "Natural Language Processing", and "Audio Models" to build their recommendation engine.
+
+At a high level, the author describes Collaborative Filtering, as a method where your preferences are matched to other users with similar preferences, then music that you have not heard from your musically similar neighbors is recommended to you. Natural Language Processing is used to analyze the lyrics, titles of songs, and even playlist titles to find and recommend similar music to that which you already listen to as well. Lastly, the audio signature of songs are analyzed and fed into algorithms which identify songs with similar sound signatures and those are recommended as well. In reality Spotify is likely using a combination of all three of these methods and more in order to generate their recommendations.
+
+The article, How Spotify recommender system works[^3], by Daniel Roy, dicusses the same techniques outlined by Clark Boyd, but also discusses how Spotify uses multi-armed bandit algorithms to drive their recommendations on their home page. There is a paper published by Spotify researchers called, Explore, Exploit, and Explain: Personalizing Explainable Recommendations with Bandits[^4]. At a high level the multi-armed bandit algorithm is designed to make a choice from a limited pool of resources such that it maximizes gain.
+
+Lastly, the article, Music To My Ears: De-Blackboxing Spotify’s Recommendation Engine[^5], by Dr. Martin Irvine, provides source material to support Spotify's use of the collaborative filter and natural language processing techniques that Spotify uses to generate their recommendations. There is a link in this article to a paper published by a lead data scientist from Spotify, Christopher C. Johnson, Logistic Matrix Factorization for Implicit Feedback Data[^6], which outlines in depth how collaborative filtering actually works.
+
+## Improving Spotify's Recommender System
+
+As a heavy user of Spotify myself I have thought through a few improvements I believe they can make to their recommender system.
+
+### Different degrees of ratings
+
+As of today (2021), Spotify only allows you to indicate that you like a song by clicking on a little heart icon which subsequently saves that song to your library. Often times I purposefully avoid doing this because the difference between simply liking a song and loving it so much I want to save it forever in my library is significant. They already have a feature where you can simply give a song a thumbs up or thumbs down but it is only available when using the "Radio" functionality which is a feature that plays songs randomly based on some artist, genre or song.
+
+Similarly, Spotify does not allow you to universally dislike songs or artists either. It does surface that feature in certain areas of the application but I think allowing for explicit dislikes across the entire application could dramatically improve their recommendation system.
+
+## References
+
+[^1]: [Most popular music streaming services in the United States in March 2018 and September 2019, by monthly users](https://www.statista.com/statistics/798125/most-popular-us-music-streaming-services-ranked-by-audience/)
+[^2]: [How Spotify Recommends Your New Favorite Artist](https://towardsdatascience.com/how-spotify-recommends-your-new-favorite-artist-8c1850512af0)
+[^3]: [How Spotify recommender system works](https://www.linkedin.com/pulse/how-spotify-recommender-system-works-daniel-roy-cfa/)
+[^4]: [Explore, Exploit, and Explain: Personalizing Explainable Recommendations with Bandits](https://static1.squarespace.com/static/5ae0d0b48ab7227d232c2bea/t/5ba849e3c83025fa56814f45/1537755637453/BartRecSys.pdf)
+[^5]: [Music To My Ears: De-Blackboxing Spotify’s Recommendation Engine](https://blogs.commons.georgetown.edu/cctp-607-spring2019/2019/05/06/music-to-my-ears-de-blackboxing-spotifys-recommendation-algorithm/)
+[^6]: [Logistic Matrix Factorization for Implicit Feedback Data](https://web.stanford.edu/~rezab/nips2014workshop/submits/logmat.pdf)
