@@ -1,5 +1,5 @@
 ---
-title: "Discussion - Recommender Systems"
+title: "Discussion - Spotify Recommender Systems"
 author: "Nick Oliver"
 output:
   prettydoc::html_pretty:
@@ -9,7 +9,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Discussion - Recommender Systems
+# Discussion - Spotify Recommender Systems
 
 ## Overview
 
