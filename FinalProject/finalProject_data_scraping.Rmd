@@ -1,0 +1,52 @@
+---
+title: "Final Project Data Scraping"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+# Scraping Articles
+
+The `rvest` library is part of the Tidyverse and specifically for scraping web data
+```{r}
+library(tidyverse)
+```
+
+
+We will start with the sitemap. Luckily it is a very simple page which just contains a very long list of links to article archives.
+```{r}
+siteMapUrl <- "https://www.wired.com/sitemap/"
+siteMapHtml <- read_html(siteMapUrl)
+```
+
+To select the links to the archives I simply need to select the parent div which wraps the archive list then grab the `a` elements
+```{r}
+archiveLinkNodes <- siteMapHtml %>%
+  html_nodes(".sitemap__section-archive > ul > li > a")
+```
+
+I end up with `r length(archiveLinkNodes)` archive links. Each archive contains multiple articles so to simplify the process and decrease the risk of being blocked I will randomly sample the archive list. 
+
+I do want to make that I sample enough data because I want the articles to span a large  time span
+```{r}
+set.seed(1972)
+
+sampledArchiveLinks <- sample(archiveLinkNodes, 100) %>%
+  html_text()
+```
+
+Check the years to make sure we have a good sample
+```{r}
+sampled %>%
+  stringi::stri_extract_all_regex("(?<=year=)[0-9]+") %>%
+  unlist() %>%
+  unique() %>%
+  parse_number() %>%
+  sort()
+```
+
+

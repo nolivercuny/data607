@@ -9,7 +9,17 @@ editor_options:
   chunk_output_type: console
 ---
 
+Are internet tech news articles online getting "pointlessly" longer in order to increase engagement/ad revenue? 
+Overview
 
+For my final project I will be attempting an analysis on a subset of online publications to attempt to determine objectively if they are longer while providing less substantive content. At a high level I will attempt to see if the word count of articles has increased while the relationship of the content to the subject of the article has decreased. 
+Motivation
+
+Recently when attempting to read articles with interesting subjects that I find on a news aggregator site hacker news I will find myself quickly losing interest due to the length of the article and a glut of content that doesn't seem to be providing any useful context or information related to the subject of the article. While my feeling is subjective, I am not alone in this feeling. The top comments for a recent Wired.com article titled Cars Are Going Electric. What Happens to the Used Batteries?, lodge a complaint that it took them 10 minutes of reading just to get to the part about what happens to the batteries. Several other sub-comments add to this speculating that articles are pointlessly increasing in length in order to increase ad-revenue.
+comments
+
+![screenshot](screenshot.png)
+https://www.wired.com/story/cars-going-electric-what-happens-used-batteries/
 - Proposal describes your motivation for performing this analysis.
 - Proposal describes likely data sources.
 
