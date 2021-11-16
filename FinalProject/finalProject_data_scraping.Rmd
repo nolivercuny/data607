@@ -35,18 +35,32 @@ I do want to make that I sample enough data because I want the articles to span 
 ```{r}
 set.seed(1972)
 
-sampledArchiveLinks <- sample(archiveLinkNodes, 100) %>%
+sampledArchiveLinks <- sample(archiveLinkNodes, 150) %>%
   html_text()
 ```
 
-Check the years to make sure we have a good sample
+Check the years to make sure we have a good sample. It appears the sample includes a link from every year that the Wired.com has published articles online which is an ideal result.
 ```{r}
-sampled %>%
+sampledArchiveLinks %>%
   stringi::stri_extract_all_regex("(?<=year=)[0-9]+") %>%
   unlist() %>%
   unique() %>%
   parse_number() %>%
   sort()
 ```
+
+Next I need to use the links to randomly select a subset of articles from the archive. Each link takes the user to another page with a list of articles that were published on the year, month and week listed in the link.
+
+```{r}
+for (archiveLink in sampledArchiveLinks) {
+  siteMapHtml <- read_html(archiveLink)
+  archiveLinkNodes <- siteMapHtml %>%
+  html_nodes(".sitemap__section-archive > ul > li > a")
+}
+```
+
+
+Now that I have the data from a large amount of articles spanning a large time range, I will store that data in a database so it can be cleaned and analyzed
+
 
 
