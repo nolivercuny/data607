@@ -16,3 +16,88 @@ editor_options:
 It can be useful to be able to classify new "test" documents using already classified "training" documents.  A common example is using a corpus of labeled spam and ham (non-spam) e-mails to predict whether or not a new document is spam.  
 
 For this project, you can start with a spam/ham dataset, then predict the class of new documents (either withheld from the training dataset or from another source such as your own spam folder).   One example corpus:   https://spamassassin.apache.org/old/publiccorpus/
+
+- Data Collection (5 points) Use a corpus of labeled spam and ham (non-spam) e-mails
+- Manually unzip the data (5 points)
+- Automatically unzip the data (5 points)
+
+- Predict the class of new documents withheld from the example corpus. (40 points) or Come up with a different set of documents (including scraped web pages!?) (60 points) 
+- Use the dictionary of common words (10 points)
+- Separate the message header from the message body (5 points)
+- Analyze these documents to predict how new documents should be classified (algorithm)(10 points)
+
+```{r}
+library(stringr)
+library(tm)
+library(class)
+library(SnowballC)
+library(RTextTools)
+```
+
+
+## Retrieving the data
+
+```{r}
+hamArchive <- "20021010_easy_ham.tar.bz2"
+hamFileUrl <- paste("https://spamassassin.apache.org/old/publiccorpus/",hamArchive, sep="")
+download.file(hamFileUrl,destfile=hamArchive)
+untar(hamArchive)
+
+spamArchive <- "20050311_spam_2.tar.bz2"
+spamFileUrl <- paste("https://spamassassin.apache.org/old/publiccorpus/",spamArchive, sep="")
+download.file(spamFileUrl,destfile=spamArchive)
+untar(spamArchive)
+# fileList <- untar(hamArchive,list=TRUE)  ## check contents
+# files <- str_split(fileList, "\n")
+
+# fileName <- files[[2]]
+# untar(hamArchive, files = files[2])
+```
+
+```{r}
+mail_messages <- VCorpus(MBoxSource("easy_ham2", encoding = "UTF8"), readerControl = list(reader = readMail))
+
+# read.delim(fileName, sep = '\n')
+hamCorpus <- Corpus(DirSource(directory = "easy_ham"))
+hamCorp <- hamCorpus %>%
+  tm_map(content_transformer(gsub), pattern = "(.*:)(.*)", replacement = "", perl=TRUE) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removeWords, stopwords(kind="en"))
+
+ospamCorpus <- Corpus(DirSource(directory = "spam_2", encoding = "ANSI_X3.4-1986"))
+spamCorp <- spamCorpus %>%
+    tm_map(content_transformer(gsub), pattern = "(.*:)(.*)", replacement = "", perl=TRUE) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removeSignature) %>%
+  tm_map(removeCitation) %>%
+  tm_map(removeMultipart) %>%
+  tm_map(removeWords, stopwords(kind="en"))
+```
+
+```{r}
+tdm <- TermDocumentMatrix(hamCorp) %>% removeSparseTerms(0.99)
+spamTdm <- TermDocumentMatrix(spamCorp) %>% removeSparseTerms(0.99)
+```
+
+```{r}
+train <- sample(nrow(tdm),ceiling(nrow(tdm) * 0.7))
+test <- (1:nrow(tdm))[-train]
+```
+
+
+```{r}
+knn.pred <- knn(tdm[train],tdm[test],tdm.cat[train])
+
+```
+
+```{r}
+container <- create_container(tdm, labels = classes,
+  trainSize = 1:a, testSize = (a + 1):b, virgin = F)
+svm <- classify_model(container, train_model(container, "SVM"))
+tree <- classify_model(container, train_model(container, "TREE"))
+forest <- classify_model(container, train_model(container, "RF"))
+maxent <- classify_model(container, train_model(container, "MAXENT"))
+```
+

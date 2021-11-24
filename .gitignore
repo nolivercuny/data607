@@ -1,1 +1,5 @@
 .DS_Store
+project4/20050311_spam_2.tar
+project4/20030228_easy_ham_2.tar.bz2
+*.dcf
+*/**/.DS_Store

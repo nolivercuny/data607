@@ -62,6 +62,54 @@ for (archiveLink in sampledArchiveLinks[1:2]) {
 }
 ```
 
+```{r}
+html <- read_html(links[[1]])
+```
+
+```{r}
+extractArticleContent <- function(html) {
+  publishDate <- html %>%
+  html_node(xpath = '//*[@data-testid="ContentHeaderPublishDate"]') %>% 
+  html_text()
+
+
+author <- html %>%
+  html_node(xpath = '//*[@data-testid="BylineName"]') %>% 
+  html_text()
+
+
+subject <- html %>%
+  html_node(xpath = '//*[@data-testid="ContentHeaderHed"]') %>% 
+  html_text()
+
+
+byLine <- html %>%
+  html_node(xpath = '//*[@data-testid="ContentHeaderAccreditation"]/div') %>% 
+  html_text()
+
+category <- html %>% 
+  html_nodes(".rubric__link") %>%
+  html_text()
+
+articleBody <- html %>% 
+  html_node(".body__inner-container") %>% 
+  html_text()
+
+c(publishDate, author, subject, byLine, category, articleBody)
+}
+```
+
+
+```{r}
+# colNames <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
+# articlesDf <- data.frame(matrix(ncol=length(colNames),nrow=0, dimnames=list(NULL, colNames)))
+articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character())
+colnames(articlesDf) <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
+data <- extractArticleContent(html)
+
+articlesDf <- articlesDf %>% add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6])
+
+```
 
 Now that I have the data from a large amount of articles spanning a large time range, I will store that data in a database so it can be cleaned and analyzed
 
