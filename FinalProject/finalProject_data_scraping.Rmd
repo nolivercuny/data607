@@ -11,12 +11,21 @@ editor_options:
 
 # Scraping Articles
 
-The `rvest` library is part of the Tidyverse and specifically for scraping web data
+## Loading Libraries
+
+I am loading the following libraries
+
+  - tidyverse
+    - contains the `rvest` library used for web scraping the Wired.com source data
+  - RODBC
+    - used to connect to Azure SQL server for long-term storage of the data
+
 ```{r}
 library(tidyverse)
+library(RODBC)
 ```
 
-
+## Web Scraping
 We will start with the sitemap. Luckily it is a very simple page which just contains a very long list of links to article archives.
 ```{r}
 siteMapUrl <- "https://www.wired.com/sitemap/"
@@ -62,9 +71,7 @@ for (archiveLink in sampledArchiveLinks[1:2]) {
 }
 ```
 
-```{r}
-html <- read_html(links[[1]])
-```
+Now we have the links it's time to extract the data
 
 ```{r}
 extractArticleContent <- function(html) {
@@ -101,17 +108,34 @@ c(publishDate, author, subject, byLine, category, articleBody)
 
 
 ```{r}
-# colNames <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
-# articlesDf <- data.frame(matrix(ncol=length(colNames),nrow=0, dimnames=list(NULL, colNames)))
 articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character())
 colnames(articlesDf) <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
 data <- extractArticleContent(html)
 
-articlesDf <- articlesDf %>% add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6])
+articlesDf <- articlesDf %>% 
+  add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6])
 
 ```
 
 Now that I have the data from a large amount of articles spanning a large time range, I will store that data in a database so it can be cleaned and analyzed
 
 
+## Database
+
+```{r}
+sqlServer <- Sys.getenv("CUNY_DB_CONN")  #Enter Azure SQL Server
+sqlDatabase <- "cuny"                #Enter Database Name
+sqlUser <- "SQL_UID"             #Enter the SQL User ID
+sqlPassword <- Sys.getenv("CUNY_DB_WRITER_USER_PWD")      #Enter the User Password
+sqlDriver <- "SQL Server"        #Leave this Drive Entry
+
+connectionStringSQL <- paste(
+  "Driver=", sqlDriver, 
+  ";Server=", sqlServer, 
+  ";Database=", sqlDatabase, 
+  ";Uid=", sqlUser, 
+  ";Pwd=", sqlPassword,
+  ";Encrypt=yes",
+  ";Port=1433")’
+```
 
