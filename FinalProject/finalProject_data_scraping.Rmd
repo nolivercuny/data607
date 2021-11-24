@@ -52,10 +52,13 @@ sampledArchiveLinks %>%
 Next I need to use the links to randomly select a subset of articles from the archive. Each link takes the user to another page with a list of articles that were published on the year, month and week listed in the link.
 
 ```{r}
-for (archiveLink in sampledArchiveLinks) {
+links <- c()
+for (archiveLink in sampledArchiveLinks[1:2]) {
   siteMapHtml <- read_html(archiveLink)
-  archiveLinkNodes <- siteMapHtml %>%
-  html_nodes(".sitemap__section-archive > ul > li > a")
+  archiveLinkNodes <- siteMapHtml %>% 
+    html_nodes(".sitemap__section-archive > ul > li > a") %>%
+    html_text()
+  links <- c(links, archiveLinkNodes)
 }
 ```
 
