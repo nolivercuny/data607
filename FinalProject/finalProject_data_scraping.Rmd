@@ -17,12 +17,13 @@ I am loading the following libraries
 
   - tidyverse
     - contains the `rvest` library used for web scraping the Wired.com source data
-  - RODBC
+  - odbc
     - used to connect to Azure SQL server for long-term storage of the data
 
 ```{r}
 library(tidyverse)
-library(RODBC)
+library(rvest)
+library(odbc)
 ```
 
 ## Web Scraping
@@ -106,14 +107,32 @@ c(publishDate, author, subject, byLine, category, articleBody)
 }
 ```
 
-
 ```{r}
 articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character())
 colnames(articlesDf) <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
-data <- extractArticleContent(html)
+```
 
-articlesDf <- articlesDf %>% 
-  add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6])
+```{r}
+
+
+for (link in sample(links,3)) {
+  tryCatch(expr={
+      html <- read_html(link)
+  data <- extractArticleContent(html)
+  articlesDf <- articlesDf %>% 
+    add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6])
+  },error=function(e){
+                message(paste("URL does not seem to exist:", link))
+            message("Here's the original error message:")
+            message(e)
+  },finally = {
+                message(paste("Processed URL:", link))
+            
+  })
+Sys.sleep(sample(1:5, 1))
+}
+
+
 
 ```
 
@@ -125,17 +144,35 @@ Now that I have the data from a large amount of articles spanning a large time r
 ```{r}
 sqlServer <- Sys.getenv("CUNY_DB_CONN")  #Enter Azure SQL Server
 sqlDatabase <- "cuny"                #Enter Database Name
-sqlUser <- "SQL_UID"             #Enter the SQL User ID
+sqlUser <- "data607_final_project_writer"             #Enter the SQL User ID
 sqlPassword <- Sys.getenv("CUNY_DB_WRITER_USER_PWD")      #Enter the User Password
-sqlDriver <- "SQL Server"        #Leave this Drive Entry
+sqlDriver <- "ODBC Driver 17 for SQL Server"        #Leave this Drive Entry
 
-connectionStringSQL <- paste(
+connectionStringSQL <- paste0(
   "Driver=", sqlDriver, 
-  ";Server=", sqlServer, 
+  ";Server=tcp:", sqlServer, 
   ";Database=", sqlDatabase, 
   ";Uid=", sqlUser, 
   ";Pwd=", sqlPassword,
   ";Encrypt=yes",
-  ";Port=1433")’
+  ";Port=1433",
+  ";TrustServerCertificate=no",
+  ";Connection Timeout=30")
+```
+
+```{r}
+sqlQuery <- "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'"
+my_connection <- dbConnect(odbc(),
+                           Driver = "ODBC Driver 17 for SQL Server",
+                           Server="tcp:cunynoliver.database.windows.net,14323",
+                           database = "cuny",
+                           uid = sqlUser,
+                           pwd = sqlPassword)
+
+close(my_connection)
+# conn <- RODBC::odbcDriverConnect(connectionStringSQL)
+# sqlDataFrame <- RODBC::sqlQuery(conn, sqlQuery)
+# RODBC::close(conn)
+
 ```
 
