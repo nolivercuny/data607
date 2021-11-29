@@ -109,35 +109,33 @@ c(publishDate, author, subject, byLine, category, articleBody)
 ```
 
 ```{r}
-articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character())
-#colnames(articlesDf) <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
+articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character(), sourceUrl = character(), retrievedAt = character())
 ```
 
 ```{r}
-
-
 for (link in sample(links,3)) {
   tryCatch(expr={
-      html <- read_html(link)
-  data <- extractArticleContent(html)
-  articlesDf <- articlesDf %>% 
-    add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6])
+    html <- read_html(link)
+    data <- extractArticleContent(html)
+    articlesDf <- articlesDf %>% 
+    add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = link, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
   },error=function(e){
-                message(paste("URL does not seem to exist:", link))
-            message("Here's the original error message:")
-            message(e)
+    message(paste("URL does not seem to exist:", link))
+    message("Here's the original error message:")
+    message(e)
   },finally = {
-                message(paste("Processed URL:", link))
-            
+    message(paste("Processed URL:", link))
   })
-Sys.sleep(sample(1:5, 1))
+  Sys.sleep(sample(1:5, 1))
 }
-
-
-
 ```
 
 Now that I have the data from a large amount of articles spanning a large time range, I will store that data in a database so it can be cleaned and analyzed
+
+backup as csv just in case
+```{r}
+write.csv(articlesDf, file = "articles.csv")
+```
 
 
 ## Database
@@ -162,11 +160,21 @@ dbSendQuery(con, createTableStatement)
 Verify table created
 ```{r}
 dbListTables(con)
-dbListFields(con, "ARTICLES")
+dbListFields(con, "Articles")
 ```
 
 Insert records
 ```{r}
-dbWriteTable(con,"ARTICLES",articlesDf, append=TRUE)
+dbWriteTable(con,"Articles",articlesDf, append=TRUE)
+```
+
+Make sure our data was inserted correctly
+```{r}
+dbGetQuery(con, "SELECT * FROM Articles")
+```
+
+
+```{r}
+dbDisconnect(con)
 ```
 
