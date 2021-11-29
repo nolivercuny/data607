@@ -141,38 +141,20 @@ Now that I have the data from a large amount of articles spanning a large time r
 
 ## Database
 
+Establish connection
 ```{r}
-sqlServer <- Sys.getenv("CUNY_DB_CONN")  #Enter Azure SQL Server
-sqlDatabase <- "cuny"                #Enter Database Name
-sqlUser <- "data607_final_project_writer"             #Enter the SQL User ID
-sqlPassword <- Sys.getenv("CUNY_DB_WRITER_USER_PWD")      #Enter the User Password
-sqlDriver <- "ODBC Driver 17 for SQL Server"        #Leave this Drive Entry
 
-connectionStringSQL <- paste0(
-  "Driver=", sqlDriver, 
-  ";Server=tcp:", sqlServer, 
-  ";Database=", sqlDatabase, 
-  ";Uid=", sqlUser, 
-  ";Pwd=", sqlPassword,
-  ";Encrypt=yes",
-  ";Port=1433",
-  ";TrustServerCertificate=no",
-  ";Connection Timeout=30")
+#For testing use in memory DB
+con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
+
+#Uncomment to manipulate real DB
+# con <- dbConnect(RSQLite::SQLite(), dbname = "project3_job_skills.db")
 ```
 
+Create table
 ```{r}
-sqlQuery <- "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'"
-my_connection <- dbConnect(odbc(),
-                           Driver = "ODBC Driver 17 for SQL Server",
-                           Server="tcp:cunynoliver.database.windows.net,14323",
-                           database = "cuny",
-                           uid = sqlUser,
-                           pwd = sqlPassword)
-
-close(my_connection)
-# conn <- RODBC::odbcDriverConnect(connectionStringSQL)
-# sqlDataFrame <- RODBC::sqlQuery(conn, sqlQuery)
-# RODBC::close(conn)
-
+fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607-team-6-project-3/master/sql/"
+createTableStatement <- getURL(fileUrl)
+dbSendQuery(con, createTableStatement)
 ```
 
