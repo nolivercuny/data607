@@ -23,7 +23,8 @@ I am loading the following libraries
 ```{r}
 library(tidyverse)
 library(rvest)
-library(odbc)
+library(DBI)
+library(RCurl)
 ```
 
 ## Web Scraping
@@ -109,7 +110,7 @@ c(publishDate, author, subject, byLine, category, articleBody)
 
 ```{r}
 articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character())
-colnames(articlesDf) <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
+#colnames(articlesDf) <- c('publishDate', 'author', 'subject', 'byLine', 'category', 'body')
 ```
 
 ```{r}
@@ -153,8 +154,19 @@ con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
 
 Create table
 ```{r}
-fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607-team-6-project-3/master/sql/"
+fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607/master/FinalProject/create_articles_table.sql"
 createTableStatement <- getURL(fileUrl)
 dbSendQuery(con, createTableStatement)
+```
+
+Verify table created
+```{r}
+dbListTables(con)
+dbListFields(con, "ARTICLES")
+```
+
+Insert records
+```{r}
+dbWriteTable(con,"ARTICLES",articlesDf, append=TRUE)
 ```
 

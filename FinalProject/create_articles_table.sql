@@ -1,12 +1,12 @@
-CREATE TABLE IF NOT EXISTS ARTICLES
+CREATE TABLE IF NOT EXISTS Articles
 (
-    ID INT PRIMARY KEY,
-    PUBLISH_DATE TEXT,
-    AUTHOR TEXT,
-    SUBJECT TEXT,
-    BYLINE TEXT,
-    CATEGORY TEXT,
-    BODY TEXT,
-    SOURCE_URL TEXT NOT NULL,
-    RETRIEVED_AT TEXT NOT NULL
+    id INT PRIMARY KEY,
+    publishDate TEXT,
+    author TEXT,
+    subject TEXT,
+    byLine TEXT,
+    category TEXT,
+    body TEXT,
+    sourceUrl TEXT NOT NULL,
+    retrievedAt TEXT NOT NULL
 )
