@@ -28,6 +28,7 @@ library(RCurl)
 ```
 
 ## Web Scraping
+
 We will start with the sitemap. Luckily it is a very simple page which just contains a very long list of links to article archives.
 ```{r}
 siteMapUrl <- "https://www.wired.com/sitemap/"
@@ -63,13 +64,14 @@ sampledArchiveLinks %>%
 Next I need to use the links to randomly select a subset of articles from the archive. Each link takes the user to another page with a list of articles that were published on the year, month and week listed in the link.
 
 ```{r}
-links <- c()
+links <- list()
 for (archiveLink in sampledArchiveLinks[1:2]) {
   siteMapHtml <- read_html(archiveLink)
   archiveLinkNodes <- siteMapHtml %>% 
     html_nodes(".sitemap__section-archive > ul > li > a") %>%
     html_text()
-  links <- c(links, archiveLinkNodes)
+  links[[archiveLink]] <- archiveLinkNodes
+  Sys.sleep(sample(1:5, 1))
 }
 ```
 
@@ -113,12 +115,16 @@ articlesDf <- data.frame(publishDate = character(), author = character(), subjec
 ```
 
 ```{r}
-for (link in sample(links,3)) {
+for (link in links) {
   tryCatch(expr={
-    html <- read_html(link)
-    data <- extractArticleContent(html)
-    articlesDf <- articlesDf %>% 
-    add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = link, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
+    for(article in sample(link,2)){
+      html <- read_html(article)
+      data <- extractArticleContent(html)
+      articlesDf <- articlesDf %>% 
+      add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = article, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
+      Sys.sleep(sample(1:5, 1))
+    }
+    
   },error=function(e){
     message(paste("URL does not seem to exist:", link))
     message("Here's the original error message:")
@@ -126,7 +132,7 @@ for (link in sample(links,3)) {
   },finally = {
     message(paste("Processed URL:", link))
   })
-  Sys.sleep(sample(1:5, 1))
+  
 }
 ```
 
@@ -144,23 +150,10 @@ Establish connection
 ```{r}
 
 #For testing use in memory DB
-con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
+# con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
 
 #Uncomment to manipulate real DB
-# con <- dbConnect(RSQLite::SQLite(), dbname = "project3_job_skills.db")
-```
-
-Create table
-```{r}
-fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607/master/FinalProject/create_articles_table.sql"
-createTableStatement <- getURL(fileUrl)
-dbSendQuery(con, createTableStatement)
-```
-
-Verify table created
-```{r}
-dbListTables(con)
-dbListFields(con, "Articles")
+con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
 ```
 
 Insert records
@@ -172,7 +165,6 @@ Make sure our data was inserted correctly
 ```{r}
 dbGetQuery(con, "SELECT * FROM Articles")
 ```
-
 
 ```{r}
 dbDisconnect(con)

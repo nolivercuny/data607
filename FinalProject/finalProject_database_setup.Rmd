@@ -1,0 +1,62 @@
+---
+title: "Final Project Data Scraping"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+# Scraping Articles
+
+## Loading Libraries
+
+I am loading the following libraries
+
+  - tidyverse
+    - contains the `rvest` library used for web scraping the Wired.com source data
+  - odbc
+    - used to connect to Azure SQL server for long-term storage of the data
+
+```{r}
+library(DBI)
+library(RCurl)
+```
+
+## Database
+
+Establish connection
+```{r}
+
+#For testing use in memory DB
+# con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
+
+#Uncomment to manipulate real DB
+con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
+```
+
+Create table
+```{r}
+fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607/master/FinalProject/create_articles_table.sql"
+createTableStatement <- getURL(fileUrl)
+dbSendQuery(con, createTableStatement)
+```
+
+Verify table created
+```{r}
+dbListTables(con)
+dbListFields(con, "Articles")
+```
+
+Make sure our data was inserted correctly
+```{r}
+dbGetQuery(con, "SELECT * FROM Articles")
+```
+
+
+```{r}
+dbDisconnect(con)
+```
+
