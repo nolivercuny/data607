@@ -1,0 +1,19 @@
+---
+title: "Final Project Analysis"
+author: "Nick Oliver"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(DBI)
+```
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
+```
+
