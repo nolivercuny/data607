@@ -73,14 +73,27 @@ for (archiveLink in sampledArchiveLinks) {
       html_text()
     links[[archiveLink]] <- archiveLinkNodes
   },error=function(e){
-    message(paste("Failed to retrieve data for link ", link))
+    message(paste("Failed to retrieve data for link ", archiveLink))
     message(e)
   },finally = {
-    message(paste("Processed URL ", link))
+    message(paste("Processed URL ", archiveLink))
     Sys.sleep(sample(1:5, 1))
   })
 }
+write.csv(links, file="final_project_links.csv")
 ```
+
+```{r}
+library(jsonlite)
+library(purrr)
+library(data.table)
+
+dt_list <- map(links, as.data.table)
+dt <- rbindlist(dt_list, fill = TRUE, idcol = T)
+
+dt <- dt %>% rename(source = .id, link = V1)
+```
+
 
 Now we have the links it's time to extract the data
 
@@ -122,7 +135,7 @@ articlesDf <- data.frame(publishDate = character(), author = character(), subjec
 ```
 
 ```{r}
-for (link in links) {
+for (link in links[1:25]) {
     for(article in sample(link,10)){
       tryCatch(expr={
         html <- read_html(article)
@@ -157,6 +170,10 @@ Establish connection
 
 #Uncomment to manipulate real DB
 con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
+```
+
+```{r}
+dbWriteTable(con,"LinksXref",dt, append=TRUE)
 ```
 
 Insert records
