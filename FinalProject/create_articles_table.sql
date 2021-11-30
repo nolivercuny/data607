@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS Articles
 (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     publishDate TEXT,
     author TEXT,
     subject TEXT,

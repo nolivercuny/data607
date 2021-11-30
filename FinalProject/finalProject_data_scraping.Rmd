@@ -65,13 +65,20 @@ Next I need to use the links to randomly select a subset of articles from the ar
 
 ```{r}
 links <- list()
-for (archiveLink in sampledArchiveLinks[1:2]) {
-  siteMapHtml <- read_html(archiveLink)
-  archiveLinkNodes <- siteMapHtml %>% 
-    html_nodes(".sitemap__section-archive > ul > li > a") %>%
-    html_text()
-  links[[archiveLink]] <- archiveLinkNodes
-  Sys.sleep(sample(1:5, 1))
+for (archiveLink in sampledArchiveLinks) {
+  tryCatch(expr={
+    siteMapHtml <- read_html(archiveLink)
+    archiveLinkNodes <- siteMapHtml %>% 
+      html_nodes(".sitemap__section-archive > ul > li > a") %>%
+      html_text()
+    links[[archiveLink]] <- archiveLinkNodes
+  },error=function(e){
+    message(paste("Failed to retrieve data for link ", link))
+    message(e)
+  },finally = {
+    message(paste("Processed URL ", link))
+    Sys.sleep(sample(1:5, 1))
+  })
 }
 ```
 
@@ -116,23 +123,20 @@ articlesDf <- data.frame(publishDate = character(), author = character(), subjec
 
 ```{r}
 for (link in links) {
-  tryCatch(expr={
-    for(article in sample(link,2)){
-      html <- read_html(article)
-      data <- extractArticleContent(html)
-      articlesDf <- articlesDf %>% 
-      add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = article, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
-      Sys.sleep(sample(1:5, 1))
+    for(article in sample(link,10)){
+      tryCatch(expr={
+        html <- read_html(article)
+        data <- extractArticleContent(html)
+        articlesDf <- articlesDf %>% 
+        add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = article, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
+      },error=function(e){
+        message(paste("Failed on article ", article))
+        message(e)
+      },finally = {
+        message(paste("Processed URL:", article))
+        Sys.sleep(sample(1:5, 1))
+      })
     }
-    
-  },error=function(e){
-    message(paste("URL does not seem to exist:", link))
-    message("Here's the original error message:")
-    message(e)
-  },finally = {
-    message(paste("Processed URL:", link))
-  })
-  
 }
 ```
 
@@ -142,7 +146,6 @@ backup as csv just in case
 ```{r}
 write.csv(articlesDf, file = "articles.csv")
 ```
-
 
 ## Database
 
