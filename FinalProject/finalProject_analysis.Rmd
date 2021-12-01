@@ -47,18 +47,33 @@ articlesGrouped %>% count()
 
 
 
-Mean word count by year
+Number of unique words in the entire year
 
 ```{r}
-uniqueWordCounts <- articlesGrouped %>% 
+wordCounts <- articlesGrouped %>% 
   unnest_tokens(word,body,token="words", strip_punct=TRUE) %>%
-  group_by(publishYear) %>%
-  count(n = n_distinct())
+  count(publishYear)
 ```
 
 ```{r}
-uniqueWordCounts %>%
-  ggplot(aes(x=publishYear, y=nn)) +
+wordCounts %>%
+  ggplot(aes(x=publishYear, y=n)) +
+  geom_smooth()
+```
+
+
+number of unique words in the entire year
+```{r}
+wordCounts <- articlesGrouped %>% 
+    unnest_tokens(word,body,token="words", strip_punct=TRUE) %>%
+    group_by(publishYear) %>% mutate(uniqueWordsCount = n_distinct(word)) %>%
+  select(publishYear, uniqueWordsCount) %>%
+  distinct()
+```
+
+```{r}
+wordCounts %>%
+  ggplot(aes(x=publishYear, y=uniqueWordsCount)) +
   geom_smooth()
 ```
 
