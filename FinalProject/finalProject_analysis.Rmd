@@ -11,9 +11,46 @@ editor_options:
 
 ```{r}
 library(DBI)
+library(tidyverse)
+library(tidytext)
 ```
 
 ```{r}
 con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
 ```
+
+- Select all articles into a dataframe
+
+```{r}
+wiredArticlesRawDf <- dbGetQuery(con, "SELECT * FROM Articles;")
+glimpse(wiredArticlesRawDf)
+```
+
+- cleanup data
+
+```{r}
+wiredArticlesDf <- wiredArticlesRawDf %>% 
+  filter(!is.na(body)) %>%
+  mutate(publishDate=as.Date(publishDate, format = "%m.%d.%Y")) %>%
+  mutate(publishYear=as.numeric(format(publishDate, "%Y")))
+```
+
+Due to the random sampling of articles I scraped, I may have a varying amounts of articles for each year. To account for that I will sample a number of articles from each year where the sample size is the number of articles in the year with the least amount of articles
+```{r}
+articlesGrouped <- wiredArticlesDf %>% 
+  group_by(publishYear) %>% 
+  nest()
+```
+
+
+
+Mean word count by year
+
+```{r}
+w <- wiredArticlesDf %>% 
+  unnest_tokens(word,body,token="words", strip_punct=TRUE) %>%
+  group_by(publishYear) %>%
+  count(n = n_distinct())
+```
+
 

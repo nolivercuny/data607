@@ -135,29 +135,73 @@ articlesDf <- data.frame(publishDate = character(), author = character(), subjec
 ```
 
 ```{r}
-for (link in links[1:25]) {
-    for(article in sample(link,10)){
-      tryCatch(expr={
-        html <- read_html(article)
-        data <- extractArticleContent(html)
-        articlesDf <- articlesDf %>% 
-        add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = article, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
-      },error=function(e){
-        message(paste("Failed on article ", article))
-        message(e)
-      },finally = {
-        message(paste("Processed URL:", article))
-        Sys.sleep(sample(1:5, 1))
-      })
-    }
+links <- dbGetQuery(con, "select lx.link
+from LinksXref lx
+left join Articles a on a.sourceUrl = lx.link
+where a.sourceUrl is null;") 
+```
+
+```{r}
+#Open DB connection
+con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
+
+#Get list of articles we haven't retrieved yet
+links <- dbGetQuery(con, "select lx.link
+from LinksXref lx
+left join Articles a on a.sourceUrl = lx.link
+where a.sourceUrl is null;") 
+
+#Create empty DataFrame to store articles with columns that match our DB table
+articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character(), sourceUrl = character(), retrievedAt = character())
+
+#Grab random sample of articles
+for(article in sample(links$link,500)){
+    tryCatch(expr={
+      html <- read_html(article)
+      data <- extractArticleContent(html)
+      articlesDf <- articlesDf %>% 
+      add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = article, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
+    },error=function(e){
+      message(paste("Failed on article ", article))
+      message(e)
+    },finally = {
+      message(paste("Processed URL:", article))
+      Sys.sleep(sample(1:5, 1))
+    })
 }
+#Store data in a csv as a backup
+write.csv(articlesDf, file = paste0("articles-",as.numeric(as.POSIXct(Sys.time())),".csv"))
+#Write articles out to table
+dbWriteTable(con,"Articles",articlesDf, append=TRUE)
+#Disconnect from DB
+dbDisconnect(con)
+```
+
+This was from when I originally pulled all of the links from the sitemap. Now that I've inserted everything into a table I can use SQL to filter articles I've already retrieved.
+```{r}
+# for (link in links[1:25]) {
+#     for(article in sample(link,10)){
+#       tryCatch(expr={
+#         html <- read_html(article)
+#         data <- extractArticleContent(html)
+#         articlesDf <- articlesDf %>% 
+#         add_row(publishDate = data[1], author = data[2], subject = data[3], byLine = data[4], category = data[5], body = data[6], sourceUrl = article, retrievedAt =format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"))
+#       },error=function(e){
+#         message(paste("Failed on article ", article))
+#         message(e)
+#       },finally = {
+#         message(paste("Processed URL:", article))
+#         Sys.sleep(sample(1:5, 1))
+#       })
+#     }
+# }
 ```
 
 Now that I have the data from a large amount of articles spanning a large time range, I will store that data in a database so it can be cleaned and analyzed
 
 backup as csv just in case
 ```{r}
-write.csv(articlesDf, file = "articles.csv")
+
 ```
 
 ## Database
