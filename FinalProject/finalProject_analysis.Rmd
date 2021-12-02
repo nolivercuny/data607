@@ -9,10 +9,13 @@ editor_options:
   chunk_output_type: console
 ---
 
+# Exploratory Analysis
+
 ```{r}
 library(DBI)
 library(tidyverse)
 library(tidytext)
+library(cowplot)
 ```
 
 ```{r}
@@ -40,40 +43,57 @@ minSampleSize <- wiredArticlesDf %>%
   min()
 articlesGrouped <- wiredArticlesDf %>% 
   group_by(publishYear) %>% 
-  slice_sample(n = minSampleSize)
+  filter(n() > 20) %>%
+  slice_sample(n = 20) #temp
 
 articlesGrouped %>% count()
 ```
 
-
-
 Number of unique words in the entire year
 
 ```{r}
-wordCounts <- articlesGrouped %>% 
+totalWords <- articlesGrouped %>% 
   unnest_tokens(word,body,token="words", strip_punct=TRUE) %>%
-  count(publishYear)
-```
+  count(publishYear) %>%
+  rename(totalWords = n)
 
-```{r}
-wordCounts %>%
-  ggplot(aes(x=publishYear, y=n)) +
-  geom_smooth()
+totalPlot <- totalWords %>%
+  ggplot(aes(x=publishYear, y=totalWords)) +
+  geom_line()
 ```
 
 
 number of unique words in the entire year
 ```{r}
-wordCounts <- articlesGrouped %>% 
+totalDistinctWords <- articlesGrouped %>% 
     unnest_tokens(word,body,token="words", strip_punct=TRUE) %>%
-    group_by(publishYear) %>% mutate(uniqueWordsCount = n_distinct(word)) %>%
-  select(publishYear, uniqueWordsCount) %>%
-  distinct()
+    group_by(publishYear) %>%
+    mutate(uniqueWordsCount = n_distinct(word)) %>%
+    select(publishYear, uniqueWordsCount) %>%
+    distinct()
+
+distinctPlot <- totalDistinctWords %>%
+  ggplot(aes(x=publishYear, y=uniqueWordsCount)) +
+  geom_line()
+
 ```
 
 ```{r}
-wordCounts %>%
-  ggplot(aes(x=publishYear, y=uniqueWordsCount)) +
-  geom_smooth()
+meanCountByArticleByYear <- wiredArticlesDf %>% 
+  group_by(publishYear, id) %>% 
+  unnest_tokens(word,body,token="words", strip_punct=TRUE) %>%
+  count() %>%
+  ungroup() %>%
+  group_by(publishYear) %>%
+  summarise(avg = mean(n))
+meanCountPlot <- meanCountByArticleByYear %>%
+  ggplot(aes(x=publishYear, y=avg)) +
+  geom_line()
 ```
+
+Here we can see that there is a distinct rise in article length on average, in total word count and distinct word count after the year 2004. 
+```{r}
+plot_grid(totalPlot, distinctPlot,meanCountPlot, labels = "AUTO")
+```
+
 

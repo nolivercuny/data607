@@ -98,33 +98,45 @@ dt <- dt %>% rename(source = .id, link = V1)
 Now we have the links it's time to extract the data
 
 ```{r}
+missingConvert <- function(variable){
+  if(length(variable) == 0) NA else variable
+}
+
 extractArticleContent <- function(html) {
   publishDate <- html %>%
   html_node(xpath = '//*[@data-testid="ContentHeaderPublishDate"]') %>% 
-  html_text()
+  html_text() %>%
+  convertToEmptyString()
 
 
 author <- html %>%
   html_node(xpath = '//*[@data-testid="BylineName"]') %>% 
-  html_text()
+  html_text() %>%
+  convertToEmptyString()
 
 
 subject <- html %>%
   html_node(xpath = '//*[@data-testid="ContentHeaderHed"]') %>% 
-  html_text()
+  html_text() %>%
+  convertToEmptyString()
 
 
 byLine <- html %>%
   html_node(xpath = '//*[@data-testid="ContentHeaderAccreditation"]/div') %>% 
-  html_text()
+  html_text() %>%
+  convertToEmptyString()
 
 category <- html %>% 
   html_nodes(".rubric__link") %>%
-  html_text()
+  html_text() %>%
+  convertToEmptyString()
 
 articleBody <- html %>% 
   html_node(".body__inner-container") %>% 
-  html_text()
+  html_text() %>%
+  convertToEmptyString()
+
+
 
 c(publishDate, author, subject, byLine, category, articleBody)
 }
@@ -232,5 +244,10 @@ dbGetQuery(con, "SELECT * FROM Articles")
 
 ```{r}
 dbDisconnect(con)
+```
+
+```{r}
+html <- read_html("https://www.wired.com/2004/01/rants-raves-19-218/")
+extractArticleContent(html)
 ```
 
