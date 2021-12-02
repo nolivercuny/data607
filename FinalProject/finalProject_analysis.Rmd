@@ -96,4 +96,36 @@ Here we can see that there is a distinct rise in article length on average, in t
 plot_grid(totalPlot, distinctPlot,meanCountPlot, labels = "AUTO")
 ```
 
+```{r}
+library(topicmodels)
+library(tm)
+library(Matrix)
+
+
+articlesAsWords <- wiredArticlesDf %>% 
+  unnest_tokens(word,body,token="words", strip_punct=TRUE)
+
+corp <- Corpus(VectorSource(wiredArticlesDf$body)) 
+# %>%  tm_map(removePunctuation) %>%
+#   tm_map(removeNumbers) %>%
+#   tm_map(removeWords, stopwords(kind="en"))
+
+text_dtm <- DocumentTermMatrix(corp,control = list(tolower=TRUE,
+                                              removePunctuation = TRUE, 
+                                              removeNumbers= TRUE,
+                                              stopwords = TRUE,
+                                              sparse=TRUE))
+text_dtm2 <- cast_sparse(text_dtm)
+
+text_dtm2 <- Matrix::sparseMatrix(i=text_dtm$i, 
+                                  j=text_dtm$j,
+                                  x=text_dtm$v, 
+                                  dims=c(text_dtm$nrow, text_dtm$ncol), 
+                                  dimnames = text_dtm$dimnames)
+
+doc_lengths <- Matrix::rowSums(text_dtm2)
+
+text_dtm3 <- text_dtm2[doc_lengths > 0, ]
+yo <- LDA(text_dtm3,k = 2, control = list(seed = 1234))
+```
 

@@ -167,7 +167,7 @@ where a.sourceUrl is null;")
 articlesDf <- data.frame(publishDate = character(), author = character(), subject = character(), byLine = character(), category = character(), body = character(), sourceUrl = character(), retrievedAt = character())
 
 #Grab random sample of articles
-for(article in sample(links$link,500)){
+for(article in sample(links$link,100)){
     tryCatch(expr={
       html <- read_html(article)
       data <- extractArticleContent(html)
