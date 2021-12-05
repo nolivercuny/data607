@@ -211,11 +211,6 @@ This was from when I originally pulled all of the links from the sitemap. Now th
 
 Now that I have the data from a large amount of articles spanning a large time range, I will store that data in a database so it can be cleaned and analyzed
 
-backup as csv just in case
-```{r}
-
-```
-
 ## Database
 
 Establish connection
@@ -250,4 +245,6 @@ dbDisconnect(con)
 html <- read_html("https://www.wired.com/2004/01/rants-raves-19-218/")
 extractArticleContent(html)
 ```
+
+
 

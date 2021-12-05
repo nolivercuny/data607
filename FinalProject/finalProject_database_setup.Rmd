@@ -37,7 +37,7 @@ Establish connection
 con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
 ```
 
-Create table
+Create Articles table
 ```{r}
 fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607/master/FinalProject/create_articles_table.sql"
 createTableStatement <- getURL(fileUrl)
@@ -55,6 +55,30 @@ Make sure our data was inserted correctly
 dbGetQuery(con, "SELECT * FROM Articles")
 ```
 
+
+Create LinksXref table
+```{r}
+fileUrl <- "https://raw.githubusercontent.com/nolivercuny/data607/master/FinalProject/create_linksxref_table.sql"
+createTableStatement <- getURL(fileUrl)
+dbSendQuery(con, createTableStatement)
+```
+
+Verify table created
+```{r}
+dbListTables(con)
+dbListFields(con, "LinksXref")
+```
+
+Make sure our data was inserted correctly
+```{r}
+dbGetQuery(con, "SELECT * FROM LinksXref")
+```
+
+Save off our LinksXref data into a csv for backup purposes
+```{r}
+linksDf <- dbGetQuery(con, "SELECT * FROM LinksXref")
+write.csv(linksDf, "final_project_sitemap.csv", row.names = FALSE)
+```
 
 ```{r}
 dbDisconnect(con)

@@ -9,6 +9,11 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r}
+library(kableExtra)
+```
+
+
 # Are Web Publications Padding Their Articles For Ad Engagement?
 
 My final project is an investigation into the question of if online web publications have been needlessly padding the length of articles in order to increase ad revenue. 
@@ -17,14 +22,96 @@ My final project is an investigation into the question of if online web publicat
 
 ### Data Sources
 
-My primary data source was the online news website Wired.com[^1]. Wired.com, initially founded as a print magazine, has been operating an online technology focuses web publication site since 1994. I chose Wired.com for two reasons, because they have a their entire backlog of articles going back to 1998 easily accessible via their site map and two because one of their articles was the initial inspiration for this project.
+My primary data source was the online news website Wired.com[^1]. Wired.com, initially founded as a print magazine, has been operating an online technology focuses web publication site since 1994. I chose Wired.com for two reasons, because they have a their entire backlog of articles going back to 1993 easily accessible via their site map and two because one of their articles was the initial inspiration for this project.
 
-## Data Collection
+## Approach
 
-```{r}
-linksDf <- read.csv('final_project_links.csv', nrows=10)
+My approach for this project consisted of the following:
+
+1. Use web scraping in R to obtain article data from Wired.com
+2. Use API calls to NYT Open API to obtain secondary article data
+3. Tidy the article data
+4. Store the data in a SQL database for long-term storage and retrieval
+5. Perform analysis on the article data
+
+### Web Scraping With R
+
+> Web scraping code can be found [here](https://github.com/nolivercuny/data607/blob/master/FinalProject/finalProject_data_scraping.Rmd)
+
+To scrape the article data from the Wired.com website I primarily used the `rvest`` library.
+
+The scraping process was broken into two distinct steps.
+
+#### Sitemap Scraping
+
+First was reading their sitemap, which conveniently was a very simple page containing a list of links from 2021 back to 1992.
+
+![Wired.com Sitemap](wired_sitemap_screenshot.png)
+
+Each link in the sitemap then directs you to a page that contains links to the actual articles. 
+
+![](wired_article_archive_screenshot.png)
+Due to the large amount of articles scraping every article would be impractical and would likely result in a block or ban of some sort from the Wired.com's team. For that reason I chose to sample a range of articles from each year that the Wired.com published articles.
+
+Reading the links from the sitemap only required a simple `rvest` call which I have below
+```r
+read_html(siteMapUrl) %>%
+  html_nodes(".sitemap__section-archive > ul > li > a")
 ```
 
+To obtain a reasonable subset of the articles I simply used the `sample` function on the top-level archive links like so
+```r
+sample(archiveLinkNodes, 150)
+```
+I then verified that I had at least one link for every year using the following code to extract the year from the URL, list the unique years, and sort for easier verification.
+```r
+sampledArchiveLinks %>%
+  stringi::stri_extract_all_regex("(?<=year=)[0-9]+") %>%
+  unlist() %>%
+  unique() %>%
+  parse_number() %>%
+  sort()
+```
+
+Finally I was left with a simple dataframe which contained a link to an article and the archive source. Here is a sample of what that data looks like for demonstration purposes.
+```{r}
+linksDf <- read.csv('final_project_sitemap.csv', nrows=5)
+kable(linksDf)
+```
+
+#### Scraping Articles Contents
+
+The next step was to scrape the contents of the articles. Again I used the `rvest` library to do the work here.
+
+Scraping the article contents involved more in-depth analysis of the HTML that made up an article. Luckily Wired.com does not invoke any anti-scraping measures and uses relatively simple strucute to display their articles. 
+
+For example to read the body of the article I simply had to select the `.body__inner-container` class.
+```r
+articleBody <- html %>% 
+  html_node(".body__inner-container") %>% 
+  html_text() %>%
+  convertToEmptyString()
+```
+To streamline the processing of the articles I created a function which took in the html of the article, parsed the contents, and returned a vector containing the contents of the article. 
+```r
+extractArticleContent <- function(html) {
+...
+c(publishDate, author, subject, byLine, category, articleBody)
+}
+```
+
+I identified 6 distinct parts the article to read and save.
+
+- Publish date
+- Author
+- Subject
+- By Line
+- Category
+- Body
+
+#### Handling Failure & Avoiding Getting Banned
+
+Because web scraping involves a lot of calls over the internet it has a high potential of failure. In order to keep the process as resilient as possible I used the try/catch/finally
 
 ## Data Manipulation
 
