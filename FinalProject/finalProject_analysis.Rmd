@@ -16,6 +16,8 @@ library(DBI)
 library(tidyverse)
 library(tidytext)
 library(cowplot)
+library(stringr)
+library(scales)
 ```
 
 ```{r}
@@ -96,36 +98,120 @@ Here we can see that there is a distinct rise in article length on average, in t
 plot_grid(totalPlot, distinctPlot,meanCountPlot, labels = "AUTO")
 ```
 
+Finally to attempt approximate the 'on subject-ness' of articles of time I will attempt to use Latent Dirichlet allocation. According to https://www.tidytextmining.com/topicmodeling.html Tidy Text Mining LDA is one of the most common algorithms for associating words with topics. My intuition is that if a subset of articles are more distinctly bucketed into a topic for a given category and year, the article would be considered less "rambling" and more concise, conveying more relevant information information and not padded with irrelevant information for ad views.
+
+
 ```{r}
-library(topicmodels)
-library(tm)
-library(Matrix)
+runLda <- function(year){
+  by_article <- wiredArticlesDf %>% 
+  filter(publishYear == year & category == 'Science') %>%
+  group_by(subject)
+  by_article_word <- by_article %>% 
+  unnest_tokens(word, body)
 
 
-articlesAsWords <- wiredArticlesDf %>% 
-  unnest_tokens(word,body,token="words", strip_punct=TRUE)
+  # find document-word counts
+  word_counts <- by_article_word %>%
+    anti_join(stop_words) %>%
+    count(subject, word, sort = TRUE) %>%
+    ungroup()
+  
+  
+  articles_dtm <- word_counts %>%
+    cast_dtm(subject, word, n)
+  articles_dtm
 
-corp <- Corpus(VectorSource(wiredArticlesDf$body)) 
-# %>%  tm_map(removePunctuation) %>%
-#   tm_map(removeNumbers) %>%
-#   tm_map(removeWords, stopwords(kind="en"))
+articles_lda <- LDA(articles_dtm, k = 10, control = list(seed = 1234))
 
-text_dtm <- DocumentTermMatrix(corp,control = list(tolower=TRUE,
-                                              removePunctuation = TRUE, 
-                                              removeNumbers= TRUE,
-                                              stopwords = TRUE,
-                                              sparse=TRUE))
-text_dtm2 <- cast_sparse(text_dtm)
 
-text_dtm2 <- Matrix::sparseMatrix(i=text_dtm$i, 
-                                  j=text_dtm$j,
-                                  x=text_dtm$v, 
-                                  dims=c(text_dtm$nrow, text_dtm$ncol), 
-                                  dimnames = text_dtm$dimnames)
+articles_topics <- tidy(articles_lda, matrix = "beta")
 
-doc_lengths <- Matrix::rowSums(text_dtm2)
 
-text_dtm3 <- text_dtm2[doc_lengths > 0, ]
-yo <- LDA(text_dtm3,k = 2, control = list(seed = 1234))
+top_terms <- articles_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 5) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+
+# print(top_terms %>%
+#   mutate(term = reorder_within(term, beta, topic)) %>%
+#   ggplot(aes(beta, term, fill = factor(topic))) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~ topic, scales = "free") +
+#   scale_y_reordered())
+
+chapters_gamma <- tidy(articles_lda, matrix = "gamma")
+
+
+
+# print(chapters_gamma %>%
+#   mutate(subject = reorder(document, gamma * topic)) %>%
+#   ggplot(aes(factor(topic), gamma)) +
+#   geom_boxplot() +
+#   facet_wrap(~ subject) +
+#   labs(x = "topic", y = expression(gamma)))
+
+chapter_classifications <- chapters_gamma %>%
+  group_by(document) %>%
+  slice_max(gamma) %>%
+  ungroup()
+
+
+book_topics <- chapter_classifications %>%
+  count(document, topic) %>%
+  group_by(document) %>%
+  slice_max(n, n = 1) %>% 
+  ungroup() %>%
+  transmute(consensus = document, topic)
+
+chapter_classifications %>%
+  inner_join(book_topics, by = "topic") %>%
+  filter(document != consensus)
+
+assignments <- augment(articles_lda, data = articles_dtm)
+
+assignments <- assignments %>%
+  rename(subject = document) %>%
+  inner_join(book_topics, by = c(".topic" = "topic"))
+
+
+
+
+# print(assignments %>%
+#   count(subject, consensus, wt = count) %>%
+#   mutate(across(c(subject, consensus), ~str_wrap(., 20))) %>%
+#   group_by(subject) %>%
+#   mutate(percent = n / sum(n)) %>%
+#   ggplot(aes(consensus, subject, fill = percent)) +
+#   geom_tile() +
+#   scale_fill_gradient2(high = "darkred", label = percent_format()) +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1),
+#         panel.grid = element_blank()) +
+#   labs(x = "Articles words were assigned to",
+#        y = "Articles words came from",
+#        fill = "% of assignments"))
+# 
+# print(assignments)
+
+wrong_words <- assignments %>%
+  filter(subject != consensus) 
+
+nrow(wrong_words)
+}
+```
+
+```{r}
+wrongWords <- data.frame(year=integer(), wrongWords=integer())
+for(var in 1998:2021){
+  r <- runLda(var)
+  wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
+}
+
+```
+Interestingly plotting the wrong words does not display an obvious trend. 
+```{r}
+wrongWords %>% ggplot(aes(x=year, y=wrongWords)) + geom_line()
 ```
 
