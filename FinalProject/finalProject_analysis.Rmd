@@ -22,7 +22,7 @@ library(scales)
 
 ```{r}
 con <- dbConnect(RSQLite::SQLite(), dbname = "final_project.db")
-wiredArticlesRawDf <- dbGetQuery(con, "SELECT * FROM Articles;")
+wiredArticlesRawDf <- dbGetQuery(con, "SELECT * FROM Articles a WHERE a.body is not null;")
 glimpse(wiredArticlesRawDf)
 dbDisconnect(con)
 ```
@@ -33,6 +33,7 @@ dbDisconnect(con)
 ```{r}
 wiredArticlesDf <- wiredArticlesRawDf %>% 
   filter(!is.na(body)) %>%
+  filter(length(body) > 100) %>%
   mutate(publishDate=as.Date(publishDate, format = "%m.%d.%Y")) %>%
   mutate(publishYear=as.numeric(format(publishDate, "%Y")))
 ```
@@ -42,11 +43,12 @@ Due to the random sampling of articles I scraped, I may have a varying amounts o
 minSampleSize <- wiredArticlesDf %>% 
   group_by(publishYear) %>%
   count() %>%
+  filter(n >= 20) %>%
   min()
 articlesGrouped <- wiredArticlesDf %>% 
   group_by(publishYear) %>% 
-  filter(n() > 20) %>%
-  slice_sample(n = 20) #temp
+  #filter(n() > minSampleSize) %>%
+  slice_sample(n = minSampleSize) #temp
 
 articlesGrouped %>% count()
 ```
@@ -102,9 +104,9 @@ Finally to attempt approximate the 'on subject-ness' of articles of time I will 
 
 
 ```{r}
-runLda <- function(year){
+runLda <- function(year, c){
   by_article <- wiredArticlesDf %>% 
-  filter(publishYear == year & category == 'Science') %>%
+  filter(publishYear == year & category == c) %>%
   group_by(subject)
   by_article_word <- by_article %>% 
   unnest_tokens(word, body)
@@ -205,7 +207,7 @@ nrow(wrong_words)
 ```{r}
 wrongWords <- data.frame(year=integer(), wrongWords=integer())
 for(var in 1998:2021){
-  r <- runLda(var)
+  r <- runLda(var, 'Culture')
   wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
 }
 
