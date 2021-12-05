@@ -17,7 +17,7 @@ I am loading the following libraries
 
   - tidyverse
     - contains the `rvest` library used for web scraping the Wired.com source data
-  - odbc
+  - DBI
     - used to connect to Azure SQL server for long-term storage of the data
 
 ```{r}
