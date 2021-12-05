@@ -41,11 +41,13 @@ wiredArticlesDf <- wiredArticlesRawDf %>%
 Due to the random sampling of articles I scraped, I may have a varying amounts of articles for each year. To account for that I will sample a number of articles from each year where the sample size is the number of articles in the year with the least amount of articles
 ```{r}
 minSampleSize <- wiredArticlesDf %>% 
+  filter(category == 'Culture') %>%
   group_by(publishYear) %>%
   count() %>%
   filter(n >= 20) %>%
   min()
 articlesGrouped <- wiredArticlesDf %>% 
+  filter(category == 'Culture') %>%
   group_by(publishYear) %>% 
   #filter(n() > minSampleSize) %>%
   slice_sample(n = minSampleSize) #temp
@@ -107,7 +109,12 @@ Finally to attempt approximate the 'on subject-ness' of articles of time I will 
 runLda <- function(year, c){
   by_article <- wiredArticlesDf %>% 
   filter(publishYear == year & category == c) %>%
+        slice_sample(n = 10) %>%
   group_by(subject)
+    
+  
+  
+  
   by_article_word <- by_article %>% 
   unnest_tokens(word, body)
 
@@ -194,7 +201,7 @@ assignments <- assignments %>%
 #   labs(x = "Articles words were assigned to",
 #        y = "Articles words came from",
 #        fill = "% of assignments"))
-# 
+
 # print(assignments)
 
 wrong_words <- assignments %>%
@@ -205,11 +212,44 @@ nrow(wrong_words)
 ```
 
 ```{r}
+ r <- runLda(2012, 'Culture')
+  wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
+  wrongWords %>% ggplot(aes(x=year, y=wrongWords)) + geom_line()
+```
+
+
+```{r}
 wrongWords <- data.frame(year=integer(), wrongWords=integer())
+for(n in 1:5){
+for(var in 1998:2021){
+  r <- runLda(var, 'Science')
+  wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
+}
+}
+sciencePlot <- wrongWords %>% group_by(year) %>% summarise(mean = mean(wrongWords)) %>% ggplot(aes(x=year, y=mean)) + geom_point() + 
+  geom_smooth(method='lm') + ggtitle('Science')
+
+wrongWords <- data.frame(year=integer(), wrongWords=integer())
+for(n in 1:5){
+for(var in 1998:2021){
+  r <- runLda(var, 'Business')
+  wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
+}
+}
+bPlot <- wrongWords %>% group_by(year) %>% summarise(mean = mean(wrongWords)) %>% ggplot(aes(x=year, y=mean)) + geom_point() + 
+  geom_smooth(method='lm') +  ggtitle('Business')
+
+wrongWords <- data.frame(year=integer(), wrongWords=integer())
+for(n in 1:5){
 for(var in 1998:2021){
   r <- runLda(var, 'Culture')
   wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
 }
+}
+culturePlot <- wrongWords %>% group_by(year) %>% summarise(mean = mean(wrongWords)) %>% ggplot(aes(x=year, y=mean)) + geom_point() + 
+  geom_smooth(method='lm') + ggtitle('Culture')
+
+plot_grid(sciencePlot, culturePlot,bPlot, labels = "AUTO")
 
 ```
 Interestingly plotting the wrong words does not display an obvious trend. 

@@ -205,7 +205,16 @@ articlesGrouped <- wiredArticlesDf %>%
   slice_sample(n = minSampleSize) #temp
 ```
 
-The second part of my analysis utilized the natural language processing technique known as Latent Dirichlet allocation (LDA). Due to my unfamiarity with LDA I borrowed heavily from the Text Mining with R[^2] book.
+The second part of my analysis utilized the natural language processing technique known as Latent Dirichlet allocation (LDA). Due to my unfamiliarity with LDA I borrowed heavily from the Text Mining with R[^2] book.
+
+According to the Text Mining with R book, LDA is one of the most common topic modeling algorithms in use today. My theory is that I could use LDA's functionality to see how well the words contained in each article were matched to the LDA algoritm's automatically generated topics. The better the match to the topics, the more on-topic the articles were.
+
+![](98_culture_words_assigned.png)
+
+As you increase the count of articles and subsequent topics, the visualizations become less valuable as you can see with this graph of just 20 articles and topics.
+![](2012_culture_20_aritcles.png)
+
+To attempt to quantify the on-topic-ness over time, I ran LDA on a sample set of articles grouped by category over the years and then saved off the number of words that were assigned to the wrong article. I then graphed the mean of the count of wrong words over time. 
 
 ## Conclusions
 
