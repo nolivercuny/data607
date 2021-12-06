@@ -242,8 +242,8 @@ dbDisconnect(con)
 ```
 
 ```{r}
-html <- read_html("https://www.wired.com/2004/01/rants-raves-19-218/")
-extractArticleContent(html)
+html <- read_html("https://www.wired.com/story/cars-going-electric-what-happens-used-batteries/")
+d <- extractArticleContent(html)
 ```
 
 

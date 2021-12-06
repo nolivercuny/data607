@@ -20,6 +20,24 @@ My final project is an investigation into the question of if online web publicat
 
 ## Background
 
+The inspiration for this project was comment thread on a Wired.com article posted on a news aggregating site called Hacker News. 
+
+The article itself was titled [Cars Are Going Electric. What Happens to the Used Batteries? ](https://www.wired.com/story/cars-going-electric-what-happens-used-batteries/). The title of the article poses a relatively clear question which one would think could be answered with a relatively short text but this article contains around 2,300 words.
+
+The two main comments are quoted below
+
+> idrisser
+These articles are insane, 10min in until you get to the part of what happens to used batteries. I'm really thinking the media business model is totally broken for these authors to not go straight to the
+point
+
+> drelau 
+I do wonder sometimes if at least some articles are so long just to be able to fit more ad banners within a single article.
+I turned off the content blocker and counted 6 ads within the length of this article.
+
+While I also had the feeling that online articles were including large amounts of off-topic information, these two comments put my feelings directly into words.
+
+My analysis, due mostly to time constraints, is focuses strictly on attempting to measure an increase in article length and if articles are less focused on their subjects overtime.
+
 ### Data Sources
 
 My primary data source was the online news website Wired.com[^1]. Wired.com, initially founded as a print magazine, has been operating an online technology focuses web publication site since 1994. I chose Wired.com for two reasons, because they have a their entire backlog of articles going back to 1993 easily accessible via their site map and two because one of their articles was the initial inspiration for this project.
