@@ -34,7 +34,7 @@ My approach for this project consisted of the following:
 4. Store the data in a SQL database for long-term storage and retrieval
 5. Perform analysis on the article data
 
-### Web Scraping With R
+## Web Scraping With R
 
 > Web scraping code can be found [here](https://github.com/nolivercuny/data607/blob/master/FinalProject/finalProject_data_scraping.Rmd)
 
@@ -42,7 +42,7 @@ To scrape the article data from the Wired.com website I primarily used the `rves
 
 The scraping process was broken into two distinct steps.
 
-#### Sitemap Scraping
+### Sitemap Scraping
 
 First was reading their sitemap, which conveniently was a very simple page containing a list of links from 2021 back to 1992.
 
@@ -79,7 +79,7 @@ linksDf <- read.csv('final_project_sitemap.csv', nrows=5)
 kable(linksDf)
 ```
 
-#### Scraping Articles Contents
+### Scraping Articles Contents
 
 The next step was to scrape the contents of the articles. Again I used the `rvest` library to do the work here.
 
@@ -114,7 +114,7 @@ To prevent hosting Wired.com's article content from my private GitHub I did not 
 ![](articles_db_screenshot.png)
 
 
-#### Handling Failure & Avoiding Getting Banned
+### Handling Failure & Avoiding Getting Banned
 
 Because web scraping involves a lot of calls over the internet it has a high potential of failure. In order to keep the process as resilient as possible I used the Try/Catch/Finally feature of the R language to handle failures. 
 
@@ -161,6 +161,23 @@ As you can see above I also included a random sleep interval in the finally bloc
 
 In addition to the sleep timer I utilized a paid Virtual Private Network (VPN) service that I already subscribe to in order to randomize my IP address. 
 
+## Data Storage
+
+> Full code for creating DB and tables [here](https://github.com/nolivercuny/data607/blob/master/FinalProject/finalProject_database_setup.Rmd)
+
+For data storage I ended up using SQLite as my database. I tried using Azure's cloud hosted SQL storage but unfortunately was unable to connect using R likely due to my PC's usage of the relatively new M1 Arm based Apple processor.
+
+The database structure was kept very simple. It consists of two tables which I have a relationship model below
+
+![](db.png)
+
+For creating the DB, tables, and querying the DB I used the `DBI` library. 
+
+Here is an example of how I inserted the articles into the Articles table using the dbWriteTable command.
+```r
+dbWriteTable(con,"Articles",articlesDf, append=TRUE)
+```
+
 ## Data Manipulation/Tidying
 
 Luckily the data I was able to scrape from the Wired.com was very tidy and required little manipulation in order to be used for my analysis. I did run into a few areas where I needed to handle some quirks of how the articles were strucuted though.
@@ -205,6 +222,8 @@ articlesGrouped <- wiredArticlesDf %>%
   slice_sample(n = minSampleSize) #temp
 ```
 
+![](word_counts.png)
+
 The second part of my analysis utilized the natural language processing technique known as Latent Dirichlet allocation (LDA). Due to my unfamiliarity with LDA I borrowed heavily from the Text Mining with R[^2] book.
 
 According to the Text Mining with R book, LDA is one of the most common topic modeling algorithms in use today. My theory is that I could use LDA's functionality to see how well the words contained in each article were matched to the LDA algoritm's automatically generated topics. The better the match to the topics, the more on-topic the articles were.
@@ -214,11 +233,23 @@ According to the Text Mining with R book, LDA is one of the most common topic mo
 As you increase the count of articles and subsequent topics, the visualizations become less valuable as you can see with this graph of just 20 articles and topics.
 ![](2012_culture_20_aritcles.png)
 
-To attempt to quantify the on-topic-ness over time, I ran LDA on a sample set of articles grouped by category over the years and then saved off the number of words that were assigned to the wrong article. I then graphed the mean of the count of wrong words over time. 
+To attempt to quantify the on-topic-ness over time, I ran LDA on a sample set of articles grouped by category over the years and then saved off the number of words that were assigned to the wrong article. I then graphed the mean of the count of wrong words over time. I toyed with the sample size but settled on 10 articles and topics and 10 iterations.
 
-## Conclusions
+![](mean_wrong_words_charts.png)
 
-Using the data I was able to obtain from Wired.com it is clear that there is a significant increase in online article length especially in recent years. 
+## Conclusion & Reflections
+
+Using the data I was able to obtain from the Wired.com I believe I was able to provide solid evidence that articles have been getting longer overtime. The word count metrics I used showed an obvious upward trend across all three metrics.
+
+While my usage of LDA did not provide as solid of evidence I believe the results at least point in a promising direction and would warrant further investigation. 
+
+Below is a list of things I would like to look into further or change
+
+- Using a separate data source
+- Dive deeper into LDA and investigate if its application was appropriate in this context
+- Research other methods of determine how on topic an article's is related to it's subject
+- Do more filtering by category and fine tuning of sample sizes
+- Collect more data to improve the analysis
 
 ## References
 

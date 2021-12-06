@@ -65,7 +65,9 @@ totalWords <- articlesGrouped %>%
 
 totalPlot <- totalWords %>%
   ggplot(aes(x=publishYear, y=totalWords)) +
-  geom_line()
+   geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle('Words Total')
 ```
 
 
@@ -80,7 +82,9 @@ totalDistinctWords <- articlesGrouped %>%
 
 distinctPlot <- totalDistinctWords %>%
   ggplot(aes(x=publishYear, y=uniqueWordsCount)) +
-  geom_line()
+   geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle('Distinct Words Total')
 
 ```
 
@@ -94,7 +98,9 @@ meanCountByArticleByYear <- wiredArticlesDf %>%
   summarise(avg = mean(n))
 meanCountPlot <- meanCountByArticleByYear %>%
   ggplot(aes(x=publishYear, y=avg)) +
-  geom_line()
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle('Mean Words / Article')
 ```
 
 Here we can see that there is a distinct rise in article length on average, in total word count and distinct word count after the year 2004. 
@@ -107,9 +113,10 @@ Finally to attempt approximate the 'on subject-ness' of articles of time I will 
 
 ```{r}
 runLda <- function(year, c){
+  articleCount <- 10
   by_article <- wiredArticlesDf %>% 
   filter(publishYear == year & category == c) %>%
-        slice_sample(n = 10) %>%
+        slice_sample(n = articleCount) %>%
   group_by(subject)
     
   
@@ -130,7 +137,7 @@ runLda <- function(year, c){
     cast_dtm(subject, word, n)
   articles_dtm
 
-articles_lda <- LDA(articles_dtm, k = 10, control = list(seed = 1234))
+articles_lda <- LDA(articles_dtm, k = articleCount, control = list(seed = 1234))
 
 
 articles_topics <- tidy(articles_lda, matrix = "beta")
@@ -220,34 +227,35 @@ nrow(wrong_words)
 
 ```{r}
 wrongWords <- data.frame(year=integer(), wrongWords=integer())
-for(n in 1:5){
+for(n in 1:10){
 for(var in 1998:2021){
   r <- runLda(var, 'Science')
   wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
 }
 }
-sciencePlot <- wrongWords %>% group_by(year) %>% summarise(mean = mean(wrongWords)) %>% ggplot(aes(x=year, y=mean)) + geom_point() + 
+sciencePlot <- wrongWords %>% group_by(year) %>% summarise(meanWrongWords = mean(wrongWords)) %>% ggplot(aes(x=year, y=meanWrongWords)) + geom_point() + 
   geom_smooth(method='lm') + ggtitle('Science')
 
 wrongWords <- data.frame(year=integer(), wrongWords=integer())
-for(n in 1:5){
+for(n in 1:10){
 for(var in 1998:2021){
   r <- runLda(var, 'Business')
   wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
 }
 }
-bPlot <- wrongWords %>% group_by(year) %>% summarise(mean = mean(wrongWords)) %>% ggplot(aes(x=year, y=mean)) + geom_point() + 
+bPlot <- wrongWords %>% group_by(year) %>% summarise(meanWrongWords = mean(wrongWords)) %>% ggplot(aes(x=year, y=meanWrongWords)) + geom_point() + 
   geom_smooth(method='lm') +  ggtitle('Business')
 
 wrongWords <- data.frame(year=integer(), wrongWords=integer())
-for(n in 1:5){
+for(n in 1:10){
 for(var in 1998:2021){
   r <- runLda(var, 'Culture')
   wrongWords <- wrongWords %>% add_row(year = var, wrongWords = r)
 }
 }
-culturePlot <- wrongWords %>% group_by(year) %>% summarise(mean = mean(wrongWords)) %>% ggplot(aes(x=year, y=mean)) + geom_point() + 
+culturePlot <- wrongWords %>% group_by(year) %>% summarise(meanWrongWords = mean(wrongWords)) %>% ggplot(aes(x=year, y=meanWrongWords)) + geom_point() + 
   geom_smooth(method='lm') + ggtitle('Culture')
+
 
 plot_grid(sciencePlot, culturePlot,bPlot, labels = "AUTO")
 
