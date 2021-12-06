@@ -9,7 +9,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r}
+```{r echo=FALSE}
 library(kableExtra)
 ```
 
@@ -261,13 +261,19 @@ Using the data I was able to obtain from the Wired.com I believe I was able to p
 
 While my usage of LDA did not provide as solid of evidence I believe the results at least point in a promising direction and would warrant further investigation. 
 
+There is some external evidence to support my conclusions as well. There are numerous articles pointing out the fall in revenue from print such as this [Digital Revenue Exceeds Print for 1st Time for New York Times Company](https://www.nytimes.com/2020/08/05/business/media/nyt-earnings-q2.html) and this article from Forbes [From Scams To Mainstream Headlines, Clickbait Is On The Rise](https://www.forbes.com/sites/petersuciu/2020/02/10/clickbait-how-baby-yoda-is-mourning-kobe-bryant-and-kirk-douglas-while-giving-up-vaping-and-cbd-to-fight-coronavirus/)
+
 Below is a list of things I would like to look into further or change
 
 - Using a separate data source
+  - My intention was to use the New York Times Open API as a secondary data source but I had to forgo it in the interest of time. More data sources would de
 - Dive deeper into LDA and investigate if its application was appropriate in this context
 - Research other methods of determine how on topic an article's is related to it's subject
 - Do more filtering by category and fine tuning of sample sizes
 - Collect more data to improve the analysis
+  - I was only able to collect a small subset of the articles that the Wired.com has posted on their website. Collecting more data would improve the quality of my analysis
+- Vet the data more closely
+  - Due to the time constraints and the inherently messy nature of web scraping it is highly likely I have more bad data than I was able to identify in my analysis.
 
 ## References
 
